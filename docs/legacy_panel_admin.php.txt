@@ -1,0 +1,12 @@
+<?php
+$tab = $_GET['tab'] ?? 'usuarios';
+$map = [
+  'usuarios'=>'admin.users','usuarios_perfiles'=>'admin.users','users'=>'admin.users',
+  'proveedores'=>'admin.providers','providers'=>'admin.providers',
+  'supervisores'=>'admin.supervisors','supervisors'=>'admin.supervisors',
+  'campos'=>'admin.catalogs','catalogos'=>'admin.catalogs','catalogs'=>'admin.catalogs',
+  'asignar'=>'admin.assign','asignar_contratos'=>'admin.assign','assign'=>'admin.assign',
+];
+$r = $map[$tab] ?? 'admin.users';
+header('Location: index.php?r='.$r);
+exit;
