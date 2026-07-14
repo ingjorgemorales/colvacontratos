@@ -7,14 +7,14 @@ use Throwable;
 final class Admin {
     public static function roles(): array { return Database::pdo()->query("SELECT * FROM roles ORDER BY id")->fetchAll(); }
     public static function users(): array { return Database::pdo()->query("SELECT u.*, r.name role_name, r.description role_description FROM users u LEFT JOIN roles r ON r.id=u.role_id ORDER BY u.id DESC")->fetchAll(); }
-    public static function createUser(array $d): void {
+    public static function createUser(array $d): ?string {
         $name=trim($d['name']??''); $email=trim($d['email']??''); $role=(int)($d['role_id']??1); $pass=trim($d['password']??'');
-        if($name===''||$email==='') return; if($pass==='') $pass='Colvatel2026*';
+        if($name===''||$email==='') return null; if($pass==='') $pass=self::generateInitialPassword();
         Database::pdo()->prepare("INSERT INTO users(role_id,name,email,password_hash,active) VALUES(?,?,?,?,1)")->execute([$role,$name,$email,password_hash($pass,PASSWORD_BCRYPT)]);
+        return $pass;
     }
     public static function updateUser(int $id, array $d): void {
         Database::pdo()->prepare("UPDATE users SET role_id=?, name=?, email=?, active=?, updated_at=NOW() WHERE id=?")->execute([(int)($d['role_id']??1), trim($d['name']??''), trim($d['email']??''), isset($d['active'])?1:0, $id]);
-        if(!empty($d['password'])) Database::pdo()->prepare("UPDATE users SET password_hash=? WHERE id=?")->execute([password_hash(trim($d['password']),PASSWORD_BCRYPT),$id]);
     }
     public static function providers(string $q=''): array {
         $pdo=Database::pdo();
@@ -83,4 +83,14 @@ final class Admin {
     public static function createGroup(array $d): void { }
     public static function createItem(array $d): void { $table=self::safeCatalogTable((string)($d['group_id']??'')); $cols=['name']; $vals=[trim($d['name']??'')]; if(self::columnExists($table,'code')){$cols[]='code';$vals[]=trim($d['code']??'');} if(self::columnExists($table,'sort_order')){$cols[]='sort_order';$vals[]=(int)($d['sort_order']??0);} if(self::columnExists($table,'active')){$cols[]='active';$vals[]=1;} $ph=implode(',',array_fill(0,count($cols),'?')); Database::pdo()->prepare("INSERT INTO `{$table}` (`".implode('`,`',$cols)."`) VALUES ({$ph})")->execute($vals); }
     public static function updateItem(int $id,array $d): void { $table=self::safeCatalogTable((string)($d['group_id']??'')); $set=['name=?']; $vals=[trim($d['name']??'')]; if(self::columnExists($table,'code')){$set[]='code=?';$vals[]=trim($d['code']??'');} if(self::columnExists($table,'sort_order')){$set[]='sort_order=?';$vals[]=(int)($d['sort_order']??0);} if(self::columnExists($table,'active')){$set[]='active=?';$vals[]=isset($d['active'])?1:0;} $vals[]=$id; Database::pdo()->prepare("UPDATE `{$table}` SET ".implode(', ',$set)." WHERE id=?")->execute($vals); }
+
+    private static function generateInitialPassword(int $length = 14): string {
+        $groups = ['ABCDEFGHJKLMNPQRSTUVWXYZ','abcdefghijkmnopqrstuvwxyz','23456789','!@#$%*?'];
+        $all = implode('', $groups);
+        $chars = [];
+        foreach($groups as $group) $chars[] = $group[random_int(0, strlen($group)-1)];
+        while(count($chars) < $length) $chars[] = $all[random_int(0, strlen($all)-1)];
+        for($i=count($chars)-1; $i>0; $i--) { $j=random_int(0,$i); [$chars[$i],$chars[$j]]=[$chars[$j],$chars[$i]]; }
+        return implode('', $chars);
+    }
 }

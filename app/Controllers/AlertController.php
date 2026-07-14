@@ -5,6 +5,7 @@ use App\Core\Auth;
 use App\Core\View;
 use App\Core\Flash;
 use App\Models\Alert;
+use App\Services\Mailer;
 
 final class AlertController {
     public function index(): void {
@@ -27,8 +28,8 @@ final class AlertController {
             $subject = 'Alerta vencimiento contrato '.$r['number'];
             $body = "Contrato: {$r['number']} - {$r['name']}\nProveedor: {$r['provider_name']}\nVence: {$r['due_date']}\nDías restantes: {$r['days_left']}\n";
             if ($to !== '' && filter_var($to, FILTER_VALIDATE_EMAIL)) {
-                $ok = @mail($to, $subject, $body, "From: contratos@colvatel.com\r\nContent-Type: text/plain; charset=UTF-8");
-                Alert::log((int)$r['id'], 'vencimiento', 'email', $to, $subject, $ok ? 'sent' : 'error', $ok ? null : 'mail() retornó false');
+                $ok = Mailer::send($to, $subject, $body);
+                Alert::log((int)$r['id'], 'vencimiento', 'email', $to, $subject, $ok ? 'sent' : 'error', $ok ? null : 'Mailer::send() retornó false');
                 if ($ok) $sent++;
             } else {
                 Alert::log((int)$r['id'], 'vencimiento', 'email', $to, $subject, 'skipped', 'Proveedor sin correo válido');

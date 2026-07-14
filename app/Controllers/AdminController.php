@@ -1,13 +1,42 @@
 <?php
 namespace App\Controllers;
-use App\Core\Auth; use App\Core\View; use App\Core\Flash; use App\Models\Admin;
+use App\Core\Auth; use App\Core\View; use App\Core\Flash; use App\Models\Admin; use App\Services\Mailer;
 
 final class AdminController {
     private function base(string $section, array $data=[]): void { Auth::requireLogin(); View::render('admin/'.$section, $data + ['section'=>$section]); }
     public function panel(): void { Auth::requireLogin(); View::render('admin/panel', ['section'=>'panel']); }
     public function users(): void { $this->base('users', ['users'=>Admin::users(), 'roles'=>Admin::roles()]); }
-    public function userStore(): void { Auth::requireLogin(); Admin::createUser($_POST); Flash::set('success','Usuario creado correctamente.'); header('Location: index.php?r=admin.users'); exit; }
-    public function userUpdate(): void { Auth::requireLogin(); Admin::updateUser((int)($_GET['id']??0), $_POST); Flash::set('success','Usuario actualizado.'); header('Location: index.php?r=admin.users'); exit; }
+    public function userStore(): void {
+        Auth::requireLogin();
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $password = Admin::createUser($_POST);
+        if ($password === null) {
+            Flash::set('danger','Nombre y correo son obligatorios.');
+            header('Location: index.php?r=admin.users');
+            exit;
+        }
+
+        $loginUrl = 'https://colvacontratos.colvatel.com/index.php?r=login';
+        $subject = 'Bienvenido a ColvaContratos - Tus credenciales de acceso';
+        $body = "Hola {$name},\n\nSe ha creado tu cuenta en ColvaContratos.\n\nUsuario (email): {$email}\nContrasena: {$password}\n\nPuedes ingresar en: {$loginUrl}\n\nTe recomendamos cambiar tu contrasena despues del primer ingreso.\n";
+        if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            Mailer::send($email, $subject, $body);
+        }
+
+        Flash::set('success','Usuario creado correctamente.');
+        header('Location: index.php?r=admin.users');
+        exit;
+    }
+    public function userUpdate(): void {
+        Auth::requireLogin();
+        $id = (int)($_GET['id'] ?? 0);
+        Admin::updateUser($id, $_POST);
+
+        Flash::set('success','Usuario actualizado.');
+        header('Location: index.php?r=admin.users');
+        exit;
+    }
     public function providers(): void { $this->base('providers', ['providers'=>Admin::providers(trim($_GET['q']??'')), 'q'=>trim($_GET['q']??'')]); }
     public function providerStore(): void { Auth::requireLogin(); Admin::createProvider($_POST); Flash::set('success','Proveedor creado correctamente.'); header('Location: index.php?r=admin.providers'); exit; }
     public function providerUpdate(): void { Auth::requireLogin(); Admin::updateProvider((int)($_GET['id']??0), $_POST); Flash::set('success','Proveedor actualizado.'); header('Location: index.php?r=admin.providers'); exit; }

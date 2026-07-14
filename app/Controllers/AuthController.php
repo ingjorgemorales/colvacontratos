@@ -105,6 +105,14 @@ final class AuthController {
 
         User::updatePassword((int)$reset['user_id'], password_hash($password, PASSWORD_DEFAULT));
         PasswordReset::markUsed((int)$reset['id']);
+
+        $userEmail = (string)($reset['email'] ?? '');
+        if ($userEmail !== '' && filter_var($userEmail, FILTER_VALIDATE_EMAIL)) {
+            $subject = 'ColvaContratos - Contrasena actualizada';
+            $body = "Hola,\n\nTu contrasena ha sido actualizada exitosamente en ColvaContratos.\n\nSi no realizaste este cambio, contacta al administrador del sistema.\n";
+            Mailer::send($userEmail, $subject, $body);
+        }
+
         Flash::set('success', 'Contrasena actualizada. Ya puedes iniciar sesion.');
         header('Location: index.php?r=login');
         exit;
@@ -117,23 +125,12 @@ final class AuthController {
     }
 
     private function absoluteUrl(string $path): string {
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/contratos/public/index.php')), '/');
-        return $scheme . '://' . $host . $base . '/' . ltrim($path, '/');
+        return 'https://colvacontratos.colvatel.com/' . ltrim($path, '/');
     }
 
     private function sendResetEmail(string $email, string $link): bool {
         $subject = 'Restablecer contrasena - ColvaContratos';
-        $message = "Hola,
-
-Recibimos una solicitud para restablecer tu contrasena en ColvaContratos.
-
-Abre este enlace durante los proximos 60 minutos:
-{$link}
-
-Si no solicitaste este cambio, ignora este mensaje.
-";
+        $message = "Hola,\n\nRecibimos una solicitud para restablecer tu contrasena en ColvaContratos.\n\nAbre este enlace durante los proximos 5 minutos:\n{$link}\n\nSi no solicitaste este cambio, ignora este mensaje.\n";
         return Mailer::send($email, $subject, $message);
     }
 

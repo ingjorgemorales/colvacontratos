@@ -9,7 +9,7 @@ final class PasswordReset {
         $token = bin2hex(random_bytes(32));
         $hash = hash('sha256', $token);
         $st = Database::pdo()->prepare(
-            "INSERT INTO password_resets (user_id, email, token_hash, expires_at, created_ip) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 60 MINUTE), ?)"
+            "INSERT INTO password_resets (user_id, email, token_hash, expires_at, created_ip) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 5 MINUTE), ?)"
         );
         $st->execute([$userId, $email, $hash, $ip]);
         return $token;
