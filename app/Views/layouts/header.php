@@ -142,6 +142,7 @@ $pageTitle = $routeTitles[$route] ?? 'ColvaContratos';
 
       <a class="<?= str_starts_with($route,'documents') || str_starts_with($route,'documentflow')?'active':'' ?>" href="index.php?r=documents"><i class="bi bi-paperclip"></i><span>Documental</span></a>
       <a class="<?= str_starts_with($route,'polizas') || str_starts_with($route,'policy_reviews')?'active':'' ?>" href="index.php?r=polizas"><i class="bi bi-shield-check"></i><span>Revisi&oacute;n de p&oacute;lizas</span></a>
+      <a class="<?= str_starts_with($route,'agente')?'active':'' ?>" href="index.php?r=agente"><i class="bi bi-robot"></i><span>Agente de P&oacute;lizas</span></a>
       <a class="<?= str_starts_with($route,'finance')?'active':'' ?>" href="index.php?r=finance"><i class="bi bi-cash-coin"></i><span>Financiera</span></a>
       <a class="<?= str_starts_with($route,'reports')?'active':'' ?>" href="index.php?r=reports"><i class="bi bi-bar-chart-line"></i><span>Reportes</span></a>
       <a class="<?= str_starts_with($route,'alerts')?'active':'' ?>" href="index.php?r=alerts"><i class="bi bi-bell"></i><span>Alertas</span><em class="alert-pill">8</em></a>

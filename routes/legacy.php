@@ -18,8 +18,16 @@ use App\Controllers\IntelligenceController;
 use App\Controllers\DocumentFlowController;
 
 use App\Controllers\PolicyReviewController;
+use App\Controllers\AgentePolizasController;
 
 $routes = [
+    // Módulo Agente de Pólizas (motor Flask colvatel-app integrado)
+    'agente' => [AgentePolizasController::class, 'index'],
+    'agente.historico' => [AgentePolizasController::class, 'historico'],
+    'agente.manual' => [AgentePolizasController::class, 'manual'],
+    'agente.apis' => [AgentePolizasController::class, 'apis'],
+    'agente.proxy' => [AgentePolizasController::class, 'proxy'],
+
     'login' => [AuthController::class, 'login'],
     'auth' => [AuthController::class, 'authenticate'],
     'logout' => [AuthController::class, 'logout'],
