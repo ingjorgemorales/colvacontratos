@@ -1,6 +1,5 @@
 <?php
 $motores = $motores ?? [];
-$agenteUp = $agenteUp ?? false;
 ?>
 <link rel="stylesheet" href="assets/css/agente.css?v=2">
 
@@ -20,12 +19,6 @@ $agenteUp = $agenteUp ?? false;
     <a class="btn btn-outline-primary btn-sm" href="index.php?r=agente.manual"><i class="bi bi-journal-text"></i> Manual</a>
     <a class="btn btn-outline-primary btn-sm" href="index.php?r=agente.apis"><i class="bi bi-key"></i> Claves APIs</a>
   </div>
-
-  <?php if (!$agenteUp): ?>
-    <div class="ag-off mb-3"><i class="bi bi-exclamation-triangle-fill"></i>
-      El motor del agente no está encendido. Arranca <code>python app.py</code> en la carpeta colvatel-app para poder analizar.
-    </div>
-  <?php endif; ?>
 
   <div class="ag-card">
     <div class="ag-card-title"><span class="bar"></span> Documentos a analizar</div>

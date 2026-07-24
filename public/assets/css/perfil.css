@@ -1,0 +1,41 @@
+/* ============================================================
+   Mi Perfil — estilos del módulo (sobre Bootstrap 5 ya cargado).
+   ============================================================ */
+.pf-hero{background:linear-gradient(135deg,#0b2257,#1a50aa);color:#fff;border-radius:16px;padding:22px 26px;margin-bottom:20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.pf-avatar{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;letter-spacing:.5px;flex-shrink:0}
+.pf-hero-info h1{font-size:22px;font-weight:700;margin:0 0 4px}
+.pf-hero-info .mail{opacity:.9;font-size:14px;margin:0}
+.pf-badges{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.pf-badge{background:rgba(255,255,255,.2);border-radius:20px;padding:3px 12px;font-size:12px;font-weight:600}
+
+.pf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;align-items:start}
+.pf-card{background:#fff;border:1px solid #e6ebf3;border-radius:14px;padding:20px 22px;box-shadow:0 1px 3px rgba(16,32,64,.04)}
+.pf-card-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;color:#0b2257;margin-bottom:16px}
+.pf-card-title .bar{width:4px;height:18px;background:#1a50aa;border-radius:3px}
+
+.pf-datos{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:4px}
+.pf-dato{background:#f7f9fc;border:1px solid #eef1f6;border-radius:10px;padding:10px 12px}
+.pf-dato span{display:block;font-size:11px;font-weight:700;text-transform:uppercase;color:#5a6b85;letter-spacing:.03em;margin-bottom:3px}
+.pf-dato strong{font-size:13.5px;color:#0b2257;font-weight:600;word-break:break-word}
+
+/* Campo de contraseña con botón de ojo */
+.pf-pass{position:relative}
+.pf-pass input{padding-right:42px}
+.pf-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;color:#5a6b85;padding:6px 8px;cursor:pointer;line-height:1;border-radius:6px}
+.pf-eye:hover{color:#1a50aa;background:#eef4ff}
+
+/* Requisitos y coincidencia */
+.pf-reqs{list-style:none;padding:0;margin:8px 0 0;font-size:12.5px}
+.pf-reqs li{display:flex;align-items:center;gap:7px;color:#8595ad;padding:2px 0}
+.pf-reqs li.ok{color:#1e6b2e}
+.pf-reqs li.bad{color:#9c0006}
+.pf-strength{height:6px;border-radius:4px;background:#e9edf4;overflow:hidden;margin-top:10px}
+.pf-strength i{display:block;height:100%;width:0;transition:width .25s,background .25s}
+.pf-strength-txt{font-size:11.5px;color:#5a6b85;margin-top:4px;display:block}
+
+@media(max-width:768px){
+  .pf-hero{padding:18px;gap:14px}
+  .pf-avatar{width:58px;height:58px;font-size:21px}
+  .pf-hero-info h1{font-size:19px}
+  .pf-card{padding:16px}
+}

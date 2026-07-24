@@ -19,8 +19,21 @@ use App\Controllers\DocumentFlowController;
 
 use App\Controllers\PolicyReviewController;
 use App\Controllers\AgentePolizasController;
+use App\Controllers\ProfileController;
+use App\Controllers\RolePermissionController;
 
 $routes = [
+    // Roles y permisos (solo rol admin)
+    'roles' => [RolePermissionController::class, 'index'],
+    'roles.save' => [RolePermissionController::class, 'save'],
+
+    // Mi Perfil (datos de la cuenta y cambio de contraseña)
+    'perfil' => [ProfileController::class, 'index'],
+    'perfil.update' => [ProfileController::class, 'update'],
+    'perfil.password' => [ProfileController::class, 'password'],
+    'perfil.cambio_inicial' => [ProfileController::class, 'firstPasswordForm'],
+    'perfil.cambio_inicial.save' => [ProfileController::class, 'firstPasswordSave'],
+
     // Módulo Agente de Pólizas (motor Flask colvatel-app integrado)
     'agente' => [AgentePolizasController::class, 'index'],
     'agente.historico' => [AgentePolizasController::class, 'historico'],

@@ -22,7 +22,6 @@ final class AgentePolizasController
         Auth::requireLogin();
         View::render('agente/analizar', [
             'motores'   => AgentePoliza::motores(true),
-            'agenteUp'  => AgentClient::isUp(),
         ]);
     }
 
@@ -31,7 +30,6 @@ final class AgentePolizasController
         Auth::requireLogin();
         View::render('agente/historico', [
             'registros' => AgentePoliza::historico(),
-            'agenteUp'  => AgentClient::isUp(),
         ]);
     }
 
@@ -42,7 +40,6 @@ final class AgentePolizasController
             'manuales'      => AgentePoliza::manuales(),
             'manual_activo' => AgentePoliza::manualActivo(),
             'motores'       => AgentePoliza::motores(true),
-            'agenteUp'      => AgentClient::isUp(),
         ]);
     }
 
@@ -53,7 +50,6 @@ final class AgentePolizasController
             'motores'     => AgentePoliza::motores(false),
             'proveedores' => AgentePoliza::proveedores(),
             'keys'        => AgentePoliza::apiKeys(),
-            'agenteUp'    => AgentClient::isUp(),
         ]);
     }
 

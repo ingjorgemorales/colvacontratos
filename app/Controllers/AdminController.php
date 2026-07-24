@@ -10,16 +10,40 @@ final class AdminController {
         Auth::requireLogin();
         $name = trim($_POST['name'] ?? '');
         $email = trim($_POST['email'] ?? '');
+        $cedula = trim($_POST['cedula'] ?? '');
+
+        // Validaciones amigables antes de insertar.
+        if ($name === '' || $email === '' || $cedula === '') {
+            Flash::set('danger','Nombre, correo y cédula son obligatorios.');
+            header('Location: index.php?r=admin.users'); exit;
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            Flash::set('danger','El correo electrónico no es válido.');
+            header('Location: index.php?r=admin.users'); exit;
+        }
+        if (!preg_match('/^[0-9]{5,15}$/', $cedula)) {
+            Flash::set('danger','La cédula debe tener solo números (entre 5 y 15 dígitos).');
+            header('Location: index.php?r=admin.users'); exit;
+        }
+        if (Admin::emailExists($email)) {
+            Flash::set('danger','Ya existe un usuario con ese correo.');
+            header('Location: index.php?r=admin.users'); exit;
+        }
+        if (Admin::cedulaExists($cedula)) {
+            Flash::set('danger','Ya existe un usuario con esa cédula.');
+            header('Location: index.php?r=admin.users'); exit;
+        }
+
         $password = Admin::createUser($_POST);
         if ($password === null) {
-            Flash::set('danger','Nombre y correo son obligatorios.');
+            Flash::set('danger','Nombre, correo y cédula son obligatorios.');
             header('Location: index.php?r=admin.users');
             exit;
         }
 
         $loginUrl = 'https://colvacontratos.colvatel.com/index.php?r=login';
         $subject = 'Bienvenido a ColvaContratos - Tus credenciales de acceso';
-        $body = "Hola {$name},\n\nSe ha creado tu cuenta en ColvaContratos.\n\nUsuario (email): {$email}\nContrasena: {$password}\n\nPuedes ingresar en: {$loginUrl}\n\nTe recomendamos cambiar tu contrasena despues del primer ingreso.\n";
+        $body = "Hola {$name},\n\nSe ha creado tu cuenta en ColvaContratos.\n\nUsuario (email): {$email}\nContrasena temporal: {$password}\n\nPuedes ingresar en: {$loginUrl}\n\nPor seguridad, al iniciar sesion por primera vez el sistema te pedira crear una contrasena nueva.\n";
         if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
             Mailer::send($email, $subject, $body);
         }

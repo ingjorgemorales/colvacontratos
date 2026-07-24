@@ -7,10 +7,17 @@ use Throwable;
 final class Admin {
     public static function roles(): array { return Database::pdo()->query("SELECT * FROM roles ORDER BY id")->fetchAll(); }
     public static function users(): array { return Database::pdo()->query("SELECT u.*, r.name role_name, r.description role_description FROM users u LEFT JOIN roles r ON r.id=u.role_id ORDER BY u.id DESC")->fetchAll(); }
+    public static function emailExists(string $email): bool {
+        $st=Database::pdo()->prepare("SELECT id FROM users WHERE email=? LIMIT 1"); $st->execute([$email]); return (bool)$st->fetch();
+    }
+    public static function cedulaExists(string $cedula): bool {
+        $st=Database::pdo()->prepare("SELECT id FROM users WHERE cedula=? LIMIT 1"); $st->execute([$cedula]); return (bool)$st->fetch();
+    }
     public static function createUser(array $d): ?string {
-        $name=trim($d['name']??''); $email=trim($d['email']??''); $role=(int)($d['role_id']??1); $pass=trim($d['password']??'');
-        if($name===''||$email==='') return null; if($pass==='') $pass=self::generateInitialPassword();
-        Database::pdo()->prepare("INSERT INTO users(role_id,name,email,password_hash,active) VALUES(?,?,?,?,1)")->execute([$role,$name,$email,password_hash($pass,PASSWORD_BCRYPT)]);
+        $name=trim($d['name']??''); $email=trim($d['email']??''); $cedula=trim($d['cedula']??''); $role=(int)($d['role_id']??1); $pass=trim($d['password']??'');
+        if($name===''||$email===''||$cedula==='') return null; if($pass==='') $pass=self::generateInitialPassword();
+        // must_change_password=1 => se le exige cambiar la clave en el primer ingreso.
+        Database::pdo()->prepare("INSERT INTO users(role_id,name,email,cedula,password_hash,active,must_change_password) VALUES(?,?,?,?,?,1,1)")->execute([$role,$name,$email,$cedula,password_hash($pass,PASSWORD_BCRYPT)]);
         return $pass;
     }
     public static function updateUser(int $id, array $d): void {

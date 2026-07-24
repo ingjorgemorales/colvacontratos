@@ -21,6 +21,9 @@ $routeTitles = [
     'admin.users' => 'Usuarios',
     'admin.catalogs' => 'Parametricas',
     'admin.panel' => 'Panel admin',
+    'perfil' => 'Mi perfil',
+    'roles' => 'Roles y permisos',
+    'agente' => 'Agente de polizas',
 ];
 $pageTitle = $routeTitles[$route] ?? 'ColvaContratos';
 ?>
@@ -60,19 +63,26 @@ $pageTitle = $routeTitles[$route] ?? 'ColvaContratos';
       </button>
     </div>
 
-    <div class="user-box modern-user">
+    <a class="user-box modern-user" href="index.php?r=perfil" style="text-decoration:none;color:inherit" title="Ver mi perfil">
       <div class="avatar-pro"><i class="bi bi-person-fill"></i></div>
       <div class="user-meta">
         <div class="user-name"><?= htmlspecialchars($user['name'] ?? 'Administrador Colvatel') ?></div>
         <div class="user-role"><?= htmlspecialchars($user['role_name'] ?? 'Administrador') ?></div>
       </div>
-    </div>
+    </a>
 
     <nav class="side-menu ui-menu modern-menu">
+      <?php if (\App\Core\Auth::can('dashboard')): ?>
       <a class="<?= $route==='dashboard'?'active':'' ?>" href="index.php?r=dashboard"><i class="bi bi-speedometer2"></i><span>Indicadores</span></a>
+      <?php endif; ?>
+      <?php if (\App\Core\Auth::can('contracts')): ?>
       <a class="<?= str_starts_with($route,'contracts')?'active':'' ?>" href="index.php?r=contracts"><i class="bi bi-file-earmark-text"></i><span>Contratos</span></a>
+      <?php endif; ?>
+      <?php if (\App\Core\Auth::can('providers')): ?>
       <a class="<?= str_starts_with($route,'providers')?'active':'' ?>" href="index.php?r=providers"><i class="bi bi-building"></i><span>Proveedores</span></a>
+      <?php endif; ?>
 
+      <?php if (\App\Core\Auth::can('parametricas')): ?>
       <details class="cc-param-details" <?= in_array($route,['admin.catalogs','areas','admin.providers'])?'open':'' ?>>
         <summary class="cc-param-summary">
           <span class="cc-param-title">
@@ -139,17 +149,42 @@ $pageTitle = $routeTitles[$route] ?? 'ColvaContratos';
           </details>
         </div>
       </details>
+      <?php endif; ?>
 
+      <?php if (\App\Core\Auth::can('documents')): ?>
       <a class="<?= str_starts_with($route,'documents') || str_starts_with($route,'documentflow')?'active':'' ?>" href="index.php?r=documents"><i class="bi bi-paperclip"></i><span>Documental</span></a>
+      <?php endif; ?>
+      <?php if (\App\Core\Auth::can('polizas')): ?>
       <a class="<?= str_starts_with($route,'polizas') || str_starts_with($route,'policy_reviews')?'active':'' ?>" href="index.php?r=polizas"><i class="bi bi-shield-check"></i><span>Revisi&oacute;n de p&oacute;lizas</span></a>
+      <?php endif; ?>
+      <?php if (\App\Core\Auth::can('agente')): ?>
       <a class="<?= str_starts_with($route,'agente')?'active':'' ?>" href="index.php?r=agente"><i class="bi bi-robot"></i><span>Agente de P&oacute;lizas</span></a>
+      <?php endif; ?>
+      <?php if (\App\Core\Auth::can('finance')): ?>
       <a class="<?= str_starts_with($route,'finance')?'active':'' ?>" href="index.php?r=finance"><i class="bi bi-cash-coin"></i><span>Financiera</span></a>
+      <?php endif; ?>
+      <?php if (\App\Core\Auth::can('reports')): ?>
       <a class="<?= str_starts_with($route,'reports')?'active':'' ?>" href="index.php?r=reports"><i class="bi bi-bar-chart-line"></i><span>Reportes</span></a>
+      <?php endif; ?>
+      <?php if (\App\Core\Auth::can('alerts')): ?>
       <a class="<?= str_starts_with($route,'alerts')?'active':'' ?>" href="index.php?r=alerts"><i class="bi bi-bell"></i><span>Alertas</span><em class="alert-pill">8</em></a>
+      <?php endif; ?>
+      <?php if (\App\Core\Auth::can('intelligence')): ?>
       <a class="<?= str_starts_with($route,'intelligence')?'active':'' ?>" href="index.php?r=intelligence"><i class="bi bi-cpu"></i><span>Inteligencia KPI</span></a>
+      <?php endif; ?>
+      <?php if (\App\Core\Auth::can('audit')): ?>
       <a class="<?= str_starts_with($route,'audit')?'active':'' ?>" href="index.php?r=audit"><i class="bi bi-clock-history"></i><span>Auditor&iacute;a</span></a>
+      <?php endif; ?>
+      <?php if (\App\Core\Auth::can('users')): ?>
       <a class="<?= str_starts_with($route,'admin.users')?'active':'' ?>" href="index.php?r=admin.users"><i class="bi bi-person-gear"></i><span>Usuarios</span></a>
+      <?php endif; ?>
+      <?php if (\App\Core\Auth::can('admin')): ?>
       <a class="<?= $route==='admin.panel'?'active':'' ?>" href="index.php?r=admin.panel"><i class="bi bi-sliders"></i><span>Panel admin</span></a>
+      <?php endif; ?>
+      <?php if (\App\Core\Auth::can('roles')): ?>
+      <a class="<?= str_starts_with($route,'roles')?'active':'' ?>" href="index.php?r=roles"><i class="bi bi-shield-lock"></i><span>Roles y permisos</span></a>
+      <?php endif; ?>
+      <a class="<?= str_starts_with($route,'perfil')?'active':'' ?>" href="index.php?r=perfil"><i class="bi bi-person-circle"></i><span>Mi perfil</span></a>
     </nav>
   </aside>
 
@@ -172,7 +207,7 @@ $pageTitle = $routeTitles[$route] ?? 'ColvaContratos';
         <a href="index.php?r=alerts" class="top-icon" title="Mensajes"><i class="bi bi-envelope"></i><span>3</span></a>
       </div>
       <div class="top-user">
-        <span><?= htmlspecialchars($user['name'] ?? 'Administrador') ?></span>
+        <a href="index.php?r=perfil" style="text-decoration:none;color:inherit" title="Mi perfil"><?= htmlspecialchars($user['name'] ?? 'Administrador') ?></a>
         <a class="btn btn-sm btn-light" href="index.php?r=logout">Salir</a>
       </div>
     </header>
