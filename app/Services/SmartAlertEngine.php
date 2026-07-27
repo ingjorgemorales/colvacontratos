@@ -183,12 +183,17 @@ final class SmartAlertEngine
     private function openInsight(int $contractId, string $type, string $severity, string $title, string $message, string $url, string $preferredEmail): void
     {
         try {
-            $exists = $this->db->prepare("SELECT id FROM contract_ai_insights WHERE contract_id=? AND insight_type=? AND title=? AND status='abierta' LIMIT 1");
-            $exists->execute([$contractId, $type, $title]);
+            // Normaliza el id: 0 significa "sin contrato" y se guarda como NULL.
+            // El chequeo de existencia usa <=> (igualdad segura con NULL) para
+            // que NULL coincida con NULL; antes comparaba 0 contra NULL y por eso
+            // creaba un insight duplicado en cada ejecución del motor.
+            $cid = $contractId > 0 ? $contractId : null;
+            $exists = $this->db->prepare("SELECT id FROM contract_ai_insights WHERE contract_id <=> ? AND insight_type=? AND title=? AND status='abierta' LIMIT 1");
+            $exists->execute([$cid, $type, $title]);
             $id = $exists->fetchColumn();
             if (!$id) {
                 $ins = $this->db->prepare("INSERT INTO contract_ai_insights(contract_id, insight_type, severity, title, message, action_url, status, created_at) VALUES(?,?,?,?,?,?, 'abierta', NOW())");
-                $ins->execute([$contractId ?: null, $type, $severity, $title, $message, $url]);
+                $ins->execute([$cid, $type, $severity, $title, $message, $url]);
                 $this->created++;
                 $id = (int)$this->db->lastInsertId();
             }

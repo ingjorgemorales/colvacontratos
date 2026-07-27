@@ -897,6 +897,28 @@ body.modern-shell {
   text-decoration: underline
 }
 
+/* Los BOTONES dentro de tablas no son enlaces de texto: conservan su propio
+   color. Sin esto heredaban el azul oscuro de .modern-table a y quedaban con
+   el texto invisible sobre su fondo azul. */
+.modern-table a.btn-primary,
+.modern-table a.btn-success,
+.modern-table a.btn-danger,
+.modern-table a.btn-secondary,
+.modern-table a.btn-dark {
+  color: #fff
+}
+
+.modern-table a.btn-outline-primary { color: #0d6efd }
+.modern-table a.btn-outline-success { color: #198754 }
+.modern-table a.btn-outline-danger  { color: #dc3545 }
+.modern-table a.btn-outline-secondary { color: #5a6b85 }
+.modern-table a.btn-light { color: #123f68 }
+
+.modern-table a.btn,
+.modern-table a.btn:hover {
+  text-decoration: none
+}
+
 @media(max-width:1200px) {
   .kpi-modern-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr))
@@ -3581,6 +3603,13 @@ body.modern-shell {
   background: linear-gradient(90deg, var(--modern-blue), #20a8c8);
   border-radius: inherit
 }
+
+/* Colores por nivel de riesgo (panel "Riesgo contractual") */
+.report-bar-bg span.rb-expired { background: linear-gradient(90deg, #7a1420, #c0392b); }
+.report-bar-bg span.rb-danger  { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+.report-bar-bg span.rb-warning { background: linear-gradient(90deg, #d68910, #f4c430); }
+.report-bar-bg span.rb-high    { background: linear-gradient(90deg, #b9530d, #e8770f); }
+.report-bar-bg span.rb-success { background: linear-gradient(90deg, #1e8449, #2ecc71); }
 
 .report-bar-row strong {
   text-align: right;

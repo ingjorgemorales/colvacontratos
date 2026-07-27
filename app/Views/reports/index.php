@@ -36,16 +36,26 @@ $maxScore = static function (array $rows): float {
     }
     return $max ?: 1;
 };
-$barRows = static function (array $rows, callable $valueGetter, callable $labelGetter, callable $rightGetter, float $max) {
+$barRows = static function (array $rows, callable $valueGetter, callable $labelGetter, callable $rightGetter, float $max, ?callable $colorGetter = null) {
     foreach ($rows as $row) {
         $value = (float)$valueGetter($row);
         $width = max(3, min(100, round(($value / max(1, $max)) * 100)));
+        $cls = $colorGetter ? ' ' . $colorGetter($row) : '';
         echo '<div class="report-bar-row">';
         echo '<div class="report-bar-label">' . $labelGetter($row) . '</div>';
-        echo '<div class="report-bar-bg"><span style="width:' . $width . '%"></span></div>';
+        echo '<div class="report-bar-bg"><span class="' . trim($cls) . '" style="width:' . $width . '%"></span></div>';
         echo '<strong>' . $rightGetter($row) . '</strong>';
         echo '</div>';
     }
+};
+// Color de barra según el nivel de riesgo (por el texto de la etiqueta).
+$riskBarClass = static function (array $row): string {
+    $t = mb_strtolower((string)($row['label'] ?? ''));
+    if (str_contains($t, 'venc'))     return 'rb-expired';
+    if (str_contains($t, 'rojo'))     return 'rb-danger';
+    if (str_contains($t, 'amarillo')) return 'rb-warning';
+    if (str_contains($t, 'verde'))    return 'rb-success';
+    return '';
 };
 $riskBadge = static function (string $risk): string {
     $class = ($risk === 'VENCIDO' || $risk === 'ROJO') ? 'risk-danger' : ($risk === 'AMARILLO' ? 'risk-warning' : 'risk-success');
@@ -113,7 +123,7 @@ $tabs = [
 
   <?php if ($activeTab === 'analitica'): ?>
     <div class="reports-chart-grid">
-      <section class="report-panel"><div class="panel-title-row"><h2>Riesgo contractual</h2></div><?php $barRows($analytics['riesgo'] ?? [], fn($r) => (float)($r['total'] ?? 0), fn($r) => htmlspecialchars($r['label'] ?? '', ENT_QUOTES, 'UTF-8'), fn($r) => (int)($r['total'] ?? 0), $maxTotal($analytics['riesgo'] ?? [])); ?></section>
+      <section class="report-panel"><div class="panel-title-row"><h2>Riesgo contractual</h2></div><?php $barRows($analytics['riesgo'] ?? [], fn($r) => (float)($r['total'] ?? 0), fn($r) => htmlspecialchars($r['label'] ?? '', ENT_QUOTES, 'UTF-8'), fn($r) => (int)($r['total'] ?? 0), $maxTotal($analytics['riesgo'] ?? []), $riskBarClass); ?></section>
       <section class="report-panel"><div class="panel-title-row"><h2>Contratos por Área</h2></div><?php $barRows($analytics['areas'] ?? [], fn($r) => (float)($r['value'] ?? 0), fn($r) => htmlspecialchars($r['label'] ?? '', ENT_QUOTES, 'UTF-8'), fn($r) => $money($r['value'] ?? 0), $maxValue($analytics['areas'] ?? [])); ?></section>
       <section class="report-panel"><div class="panel-title-row"><h2>Proveedores por clasificación</h2></div><?php $barRows($analytics['proveedores_clasificacion'] ?? [], fn($r) => (float)($r['total'] ?? 0), fn($r) => htmlspecialchars($r['label'] ?? '', ENT_QUOTES, 'UTF-8'), fn($r) => (int)($r['total'] ?? 0), $maxTotal($analytics['proveedores_clasificacion'] ?? [])); ?></section>
       <section class="report-panel"><div class="panel-title-row"><h2>Tipo contratista</h2></div><?php $barRows($analytics['proveedores_tipo'] ?? [], fn($r) => (float)($r['total'] ?? 0), fn($r) => htmlspecialchars($r['label'] ?? '', ENT_QUOTES, 'UTF-8'), fn($r) => (int)($r['total'] ?? 0), $maxTotal($analytics['proveedores_tipo'] ?? [])); ?></section>

@@ -3,7 +3,24 @@ namespace App\Models;
 use App\Core\Database;
 
 final class Provider {
-    public static function all(string $q=''): array {
+    /** Total de proveedores que cumplen la búsqueda (para la paginación). */
+    public static function countAll(string $q=''): int {
+        $base = 'SELECT COUNT(*) FROM providers p
+                 LEFT JOIN provider_cities pc ON pc.id=p.city_id
+                 LEFT JOIN catalog_tipo_contratista tcon ON tcon.id=p.tipo_contratista_id
+                 LEFT JOIN catalog_tipo_persona tper ON tper.id=p.tipo_persona_id
+                 LEFT JOIN catalog_clasificacion cla ON cla.id=p.clasificacion_id';
+        if ($q !== '') {
+            $like='%'.$q.'%';
+            $st=Database::pdo()->prepare($base.' WHERE (p.document_number LIKE ? OR p.name LIKE ? OR p.email LIKE ? OR p.city LIKE ? OR pc.name LIKE ? OR tcon.name LIKE ? OR tper.name LIKE ? OR cla.name LIKE ?)');
+            $st->execute([$like,$like,$like,$like,$like,$like,$like,$like]);
+            return (int)$st->fetchColumn();
+        }
+        return (int)Database::pdo()->query($base)->fetchColumn();
+    }
+
+    public static function all(string $q='', int $limit=0, int $offset=0): array {
+        $lim = $limit > 0 ? " LIMIT {$limit} OFFSET {$offset}" : '';
         $sql = 'SELECT p.*, pc.name AS city_name, pt.name AS type_name,
                        tcon.name AS tipo_contratista_name,
                        tper.name AS tipo_persona_name,
@@ -22,10 +39,10 @@ final class Provider {
                 LEFT JOIN catalog_clase_contratista ccl ON ccl.id=p.clase_contratista_id';
         if ($q !== '') {
             $like='%'.$q.'%';
-            $st=Database::pdo()->prepare($sql.' WHERE p.document_number LIKE ? OR p.name LIKE ? OR p.email LIKE ? OR p.city LIKE ? OR pc.name LIKE ? OR tcon.name LIKE ? OR tper.name LIKE ? OR cla.name LIKE ? ORDER BY p.name');
+            $st=Database::pdo()->prepare($sql.' WHERE (p.document_number LIKE ? OR p.name LIKE ? OR p.email LIKE ? OR p.city LIKE ? OR pc.name LIKE ? OR tcon.name LIKE ? OR tper.name LIKE ? OR cla.name LIKE ?) ORDER BY p.name'.$lim);
             $st->execute([$like,$like,$like,$like,$like,$like,$like,$like]); return $st->fetchAll();
         }
-        return Database::pdo()->query($sql.' ORDER BY p.name')->fetchAll();
+        return Database::pdo()->query($sql.' ORDER BY p.name'.$lim)->fetchAll();
     }
     public static function exportRows(string $q=""): array { return self::all($q); }
     public static function find(int $id): ?array { $st=Database::pdo()->prepare('SELECT * FROM providers WHERE id=?'); $st->execute([$id]); return $st->fetch() ?: null; }

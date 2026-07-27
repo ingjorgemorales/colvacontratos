@@ -1,7 +1,7 @@
 <?php
 $providers = $providers ?? [];
 $q = trim((string)($q ?? ''));
-$total = count($providers);
+$total = isset($pg) ? $pg->total : count($providers);
 $activeCount = 0;
 $inactiveCount = 0;
 $withEmail = 0;
@@ -244,5 +244,11 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
         </div>
       <?php endif; ?>
     </div>
+    <?php if (isset($pg) && $pg->pages > 1): ?>
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 px-3 py-2" style="border-top:1px solid #eef1f6">
+        <span class="text-muted" style="font-size:12.5px"><?= $pg->summary() ?></span>
+        <?= $pg->links(array_filter(['r'=>'providers', 'q'=>$q])) ?>
+      </div>
+    <?php endif; ?>
   </div>
 </section>

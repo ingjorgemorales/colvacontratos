@@ -48,6 +48,7 @@ final class AdminController {
             Mailer::send($email, $subject, $body);
         }
 
+        \App\Services\Audit::log('Usuarios', 'Creó un usuario', $name . ' <' . $email . '>');
         Flash::set('success','Usuario creado correctamente.');
         header('Location: index.php?r=admin.users');
         exit;
@@ -56,7 +57,7 @@ final class AdminController {
         Auth::requireLogin();
         $id = (int)($_GET['id'] ?? 0);
         Admin::updateUser($id, $_POST);
-
+        \App\Services\Audit::log('Usuarios', 'Actualizó un usuario', 'ID ' . $id, $id);
         Flash::set('success','Usuario actualizado.');
         header('Location: index.php?r=admin.users');
         exit;
@@ -67,7 +68,20 @@ final class AdminController {
     public function supervisors(): void { $this->base('supervisors', ['supervisors'=>Admin::supervisors(), 'users'=>Admin::users()]); }
     public function supervisorStore(): void { Auth::requireLogin(); Admin::createSupervisor($_POST); Flash::set('success','Supervisor creado correctamente.'); header('Location: index.php?r=admin.supervisors'); exit; }
     public function supervisorUpdate(): void { Auth::requireLogin(); Admin::updateSupervisor((int)($_GET['id']??0), $_POST); Flash::set('success','Supervisor actualizado.'); header('Location: index.php?r=admin.supervisors'); exit; }
-    public function catalogs(): void { $gid=(string)($_GET['group_id']??''); $q=trim((string)($_GET['q']??'')); $this->base('catalogs', ['groups'=>Admin::groups(), 'items'=>Admin::items($gid,$q), 'group_id'=>$gid, 'q'=>$q, 'categoryCards'=>Admin::categoryCards(), 'stats'=>Admin::catalogStats()]); }
+    public function catalogs(): void {
+        $gid=(string)($_GET['group_id']??''); $q=trim((string)($_GET['q']??''));
+        // items() puede unir varias tablas de catálogo, así que se pagina el
+        // resultado ya combinado (5 por página).
+        $todos = Admin::items($gid,$q);
+        $pg = new \App\Core\Paginator(count($todos), 5, \App\Core\Paginator::pageFromRequest());
+        $this->base('catalogs', [
+            'groups'=>Admin::groups(),
+            'items'=>array_slice($todos, $pg->offset(), $pg->perPage()),
+            'group_id'=>$gid, 'q'=>$q,
+            'categoryCards'=>Admin::categoryCards(), 'stats'=>Admin::catalogStats(),
+            'pg'=>$pg,
+        ]);
+    }
     public function groupStore(): void { Auth::requireLogin(); Admin::createGroup($_POST); Flash::set('success','Grupo creado.'); header('Location: index.php?r=admin.catalogs'); exit; }
     public function itemStore(): void { Auth::requireLogin(); Admin::createItem($_POST); Flash::set('success','Campo creado.'); header('Location: index.php?r=admin.catalogs&group_id='.(string)($_POST['group_id']??'')); exit; }
     public function itemUpdate(): void { Auth::requireLogin(); Admin::updateItem((int)($_GET['id']??0), $_POST); Flash::set('success','Campo actualizado.'); header('Location: index.php?r=admin.catalogs&group_id='.(string)($_POST['group_id']??'')); exit; }

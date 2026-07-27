@@ -26,6 +26,7 @@ final class AuthController {
         $user = User::findByEmail($email);
         if ($user && (int)($user['active'] ?? 1) === 1 && password_verify($pass, (string)$user['password_hash'])) {
             $_SESSION['user'] = $user;
+            \App\Services\Audit::log('Sesión', 'Inició sesión', (string)($user['email'] ?? ''));
             header('Location: index.php?r=dashboard');
             exit;
         }
@@ -119,6 +120,7 @@ final class AuthController {
     }
 
     public function logout(): void {
+        \App\Services\Audit::log('Sesión', 'Cerró sesión');
         session_destroy();
         header('Location: index.php?r=login');
         exit;

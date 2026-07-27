@@ -14,8 +14,10 @@ final class AlertController {
         $expiring = Alert::expiringContracts($days);
         $expired = Alert::expiredContracts();
         $missingDocs = Alert::missingDocuments();
-        $logs = Alert::logs(80);
-        View::render('alerts/index', compact('days','expiring','expired','missingDocs','logs'));
+        // Bitácora paginada (5 por página) con parámetro propio ?lpage.
+        $pgLogs = new \App\Core\Paginator(Alert::countLogs(), 5, \App\Core\Paginator::pageFromRequest('lpage'));
+        $logs = Alert::logs($pgLogs->perPage(), $pgLogs->offset());
+        View::render('alerts/index', compact('days','expiring','expired','missingDocs','logs','pgLogs'));
     }
 
     public function run(): void {

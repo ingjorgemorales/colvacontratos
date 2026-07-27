@@ -9,6 +9,15 @@ $severityClass = static function (string $severity): string {
         'baja' => 'provider-active',
     ][$severity] ?? 'provider-inactive';
 };
+// Color de la barra según el nivel de riesgo del contrato.
+$riskBarClass = static function (string $nivel): string {
+    return [
+        'normal'  => 'rb-success',   // verde
+        'medio'   => 'rb-warning',   // amarillo
+        'alto'    => 'rb-high',      // naranja
+        'critico' => 'rb-danger',    // rojo
+    ][mb_strtolower(trim($nivel))] ?? '';
+};
 $maxArea = 1;
 foreach (($byArea ?? []) as $row) {
     $maxArea = max($maxArea, (int)($row['total'] ?? 0));
@@ -41,7 +50,7 @@ $totalContracts = max(1, (int)($k['total'] ?? 1));
     <section class="intelligence-panel wide">
       <div class="table-card-head">
         <div><h2>Insights abiertos</h2><p>Hallazgos generados por el motor inteligente.</p></div>
-        <span class="filter-pill"><?= number_format(count($insights ?? []), 0, ',', '.') ?> insights</span>
+        <span class="filter-pill"><?= isset($pg) ? number_format($pg->total, 0, ',', '.') : number_format(count($insights ?? []), 0, ',', '.') ?> insights</span>
       </div>
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0 modern-table intelligence-table">
@@ -61,6 +70,12 @@ $totalContracts = max(1, (int)($k['total'] ?? 1));
           </tbody>
         </table>
       </div>
+      <?php if (isset($pg) && $pg->pages > 1): ?>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 px-3 py-2" style="border-top:1px solid #eef1f6">
+          <span class="text-muted" style="font-size:12.5px"><?= $pg->summary() ?></span>
+          <?= $pg->links(['r'=>'intelligence']) ?>
+        </div>
+      <?php endif; ?>
     </section>
 
     <aside class="intelligence-side">
@@ -68,7 +83,7 @@ $totalContracts = max(1, (int)($k['total'] ?? 1));
         <div class="panel-title-row"><h2>Riesgo por categor&iacute;a</h2></div>
         <div class="report-bars">
           <?php foreach (($byRisk ?? []) as $row): $pct = round(((int)($row['total'] ?? 0) / $totalContracts) * 100); ?>
-            <div class="report-bar-row"><div class="report-bar-label"><?= htmlspecialchars($row['label'] ?? '', ENT_QUOTES, 'UTF-8') ?></div><div class="report-bar-bg"><span style="width:<?= max(3, min(100, $pct)) ?>%"></span></div><strong><?= (int)($row['total'] ?? 0) ?></strong></div>
+            <div class="report-bar-row"><div class="report-bar-label"><?= htmlspecialchars($row['label'] ?? '', ENT_QUOTES, 'UTF-8') ?></div><div class="report-bar-bg"><span class="<?= $riskBarClass((string)($row['label'] ?? '')) ?>" style="width:<?= max(3, min(100, $pct)) ?>%"></span></div><strong><?= (int)($row['total'] ?? 0) ?></strong></div>
           <?php endforeach; ?>
           <?php if (empty($byRisk)): ?><div class="empty-state">Sin datos de riesgo.</div><?php endif; ?>
         </div>
@@ -89,7 +104,7 @@ $totalContracts = max(1, (int)($k['total'] ?? 1));
   <section class="intelligence-panel">
     <div class="table-card-head">
       <div><h2>&Uacute;ltimas notificaciones</h2><p>Historial reciente de comunicaciones generadas.</p></div>
-      <span class="filter-pill"><?= number_format(count($logs ?? []), 0, ',', '.') ?> registros</span>
+      <span class="filter-pill"><?= isset($pgLogs) ? number_format($pgLogs->total, 0, ',', '.') : number_format(count($logs ?? []), 0, ',', '.') ?> registros</span>
     </div>
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0 modern-table intelligence-table">
@@ -110,5 +125,11 @@ $totalContracts = max(1, (int)($k['total'] ?? 1));
         </tbody>
       </table>
     </div>
+    <?php if (isset($pgLogs) && $pgLogs->pages > 1): ?>
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 px-3 py-2" style="border-top:1px solid #eef1f6">
+        <span class="text-muted" style="font-size:12.5px"><?= $pgLogs->summary() ?></span>
+        <?= $pgLogs->links(['r'=>'intelligence'], 'lpage') ?>
+      </div>
+    <?php endif; ?>
   </section>
 </section>

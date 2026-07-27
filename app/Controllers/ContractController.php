@@ -31,12 +31,15 @@ final class ContractController {
             'contract_type_id' => trim($_GET['contract_type_id'] ?? ''),
             'q' => trim($_GET['q'] ?? ''),
         ];
+        $total = Contract::countFiltered($filters);
+        $pg = new \App\Core\Paginator($total, 20, \App\Core\Paginator::pageFromRequest());
         View::render('contracts/index', [
-            'contracts' => Contract::paginate($filters, 200, 0),
+            'contracts' => Contract::paginate($filters, $pg->perPage(), $pg->offset()),
             'filters' => $filters,
             'areas' => Catalog::areas(),
             'statuses' => Catalog::statuses(),
             'contractTypes' => Catalog::contractTypes(),
+            'pg' => $pg,
         ]);
     }
 

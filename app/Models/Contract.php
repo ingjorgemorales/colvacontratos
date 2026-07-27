@@ -24,6 +24,19 @@ final class Contract {
         return $st->fetchAll();
     }
 
+    /** Total de contratos que cumplen los filtros (para la paginación). */
+    public static function countFiltered(array $filters): int {
+        $where=[]; $params=[];
+        if (!empty($filters['area_id'])) { $where[]='c.area_id=?'; $params[]=(int)$filters['area_id']; }
+        if (!empty($filters['status_id'])) { $where[]='c.status_id=?'; $params[]=(int)$filters['status_id']; }
+        if (!empty($filters['contract_type_id'])) { $where[]='c.contract_type_id=?'; $params[]=(int)$filters['contract_type_id']; }
+        if (!empty($filters['q'])) { $where[]='(c.number LIKE ? OR c.name LIKE ? OR p.name LIKE ? OR c.supervisor_name LIKE ?)'; $q='%'.$filters['q'].'%'; array_push($params,$q,$q,$q,$q); }
+        $w = $where ? 'WHERE '.implode(' AND ', $where) : '';
+        $sql = "SELECT COUNT(*) FROM contracts c LEFT JOIN providers p ON p.id=c.provider_id $w";
+        $st=Database::pdo()->prepare($sql); $st->execute($params);
+        return (int)$st->fetchColumn();
+    }
+
     public static function find(int $id): ?array {
         $sql = "SELECT c.*, a.name area_name, sa.name sub_area_name, p.name provider_name, s.name status_name,
                        sup.full_name supervisor_catalog_name, sup.document_number supervisor_catalog_document, sup.verification_digit supervisor_catalog_dv,

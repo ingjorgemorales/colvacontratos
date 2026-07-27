@@ -72,6 +72,12 @@ final class AgentePolizasController
             exit;
         }
 
+        // Auditar las acciones significativas del agente.
+        if (str_starts_with($path, '/api/analizar')) {
+            $cn = $_FILES['contrato']['name'] ?? '';
+            \App\Services\Audit::log('Agente de Pólizas', 'Analizó documentos con IA', is_string($cn) ? $cn : '');
+        }
+
         // Conservar query params extra (p. ej. ?idx=1), quitando r y path.
         $q = $_GET;
         unset($q['r'], $q['path']);

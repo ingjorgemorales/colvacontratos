@@ -46,6 +46,7 @@ final class ProfileController
         }
 
         User::updateProfile($id, $name, $email);
+        \App\Services\Audit::log('Perfil', 'Actualizó sus datos de perfil');
         $this->refreshSession($id);
         $this->back('success', 'Datos de perfil actualizados.');
     }
@@ -77,6 +78,7 @@ final class ProfileController
         }
 
         User::updatePassword($id, password_hash($nueva, PASSWORD_DEFAULT));
+        \App\Services\Audit::log('Perfil', 'Cambió su contraseña');
         $this->refreshSession($id);
 
         // Aviso por correo (mismo criterio que el flujo de recuperación).
@@ -133,6 +135,7 @@ final class ProfileController
         }
 
         User::completeFirstPassword($id, password_hash($nueva, PASSWORD_DEFAULT));
+        \App\Services\Audit::log('Perfil', 'Definió su contraseña (primer ingreso)');
         $this->refreshSession($id);
         Flash::set('success', '¡Listo! Tu contraseña quedó configurada. Bienvenido a ColvaContratos.');
         header('Location: index.php?r=dashboard');

@@ -6,7 +6,13 @@ final class ProviderController {
     private function formData(array $provider, string $action, string $title): array {
         return Provider::catalogsForForm() + ['provider'=>$provider, 'action'=>$action, 'title'=>$title];
     }
-    public function index(): void { Auth::requireLogin(); View::render('providers/index', ['providers'=>Provider::all(trim($_GET['q'] ?? '')), 'q'=>trim($_GET['q'] ?? '')]); }
+    public function index(): void {
+        Auth::requireLogin();
+        $q = trim($_GET['q'] ?? '');
+        $total = Provider::countAll($q);
+        $pg = new \App\Core\Paginator($total, 20, \App\Core\Paginator::pageFromRequest());
+        View::render('providers/index', ['providers'=>Provider::all($q, $pg->perPage(), $pg->offset()), 'q'=>$q, 'pg'=>$pg]);
+    }
     public function create(): void { Auth::requireLogin(); View::render('providers/form', $this->formData([], 'index.php?r=providers.store', 'Nuevo proveedor')); }
     public function store(): void {
         Auth::requireLogin();

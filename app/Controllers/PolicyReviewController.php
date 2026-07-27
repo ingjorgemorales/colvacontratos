@@ -66,6 +66,7 @@ final class PolicyReviewController {
             'checklist'=>$checklist,
             'created_by'=>$user['name'] ?? 'Sistema',
         ], $saved);
+        \App\Services\Audit::log('Revisión de pólizas', 'Registró una revisión de póliza', 'ID ' . $id, (int)$id);
         Flash::set('success','Revisión de póliza registrada correctamente.');
         header('Location: index.php?r=polizas.show&id='.$id); exit;
     }
@@ -82,6 +83,7 @@ final class PolicyReviewController {
         Auth::requireLogin();
         $id=(int)($_POST['id'] ?? 0);
         PolicyReview::updateStatus($id, $_POST['status'] ?? 'PENDIENTE', trim($_POST['observations'] ?? ''));
+        \App\Services\Audit::log('Revisión de pólizas', 'Actualizó el estado de una revisión', 'ID ' . $id . ' -> ' . ($_POST['status'] ?? ''), (int)$id);
         Flash::set('success','Estado de revisión actualizado.');
         header('Location: index.php?r=polizas.show&id='.$id); exit;
     }

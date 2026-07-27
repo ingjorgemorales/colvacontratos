@@ -48,6 +48,26 @@ final class Alert {
         } catch (\Throwable $e) { return []; }
     }
 
+    /**
+     * Número de alertas pendientes: contratos vencidos + los que vencen en los
+     * próximos 30 días. Se usa en el indicador del menú y la barra superior.
+     */
+    public static function pendingCount(): int {
+        try {
+            return (int) self::pdo()->query(
+                "SELECT COUNT(*) FROM contracts
+                 WHERE COALESCE(extension_end_date,end_date) IS NOT NULL
+                   AND COALESCE(extension_end_date,end_date) <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)"
+            )->fetchColumn();
+        } catch (\Throwable $e) { return 0; }
+    }
+
+    /** Total de registros de la bitácora (para la paginación). */
+    public static function countLogs(): int {
+        try { return (int) self::pdo()->query("SELECT COUNT(*) FROM contract_alert_logs")->fetchColumn(); }
+        catch (\Throwable $e) { return 0; }
+    }
+
     public static function log(int $contractId, string $type, string $channel, string $recipient, string $subject, string $status, ?string $error = null): void {
         try {
             $st = self::pdo()->prepare("INSERT INTO contract_alert_logs(contract_id, alert_type, channel, recipient, subject, status, error_message, sent_at)
@@ -56,13 +76,14 @@ final class Alert {
         } catch (\Throwable $e) {}
     }
 
-    public static function logs(int $limit = 100): array {
+    public static function logs(int $limit = 100, int $offset = 0): array {
         try {
             $st = self::pdo()->prepare("SELECT l.*, c.number, c.name AS contract_name
                                       FROM contract_alert_logs l
                                       LEFT JOIN contracts c ON c.id=l.contract_id
-                                      ORDER BY l.id DESC LIMIT ?");
+                                      ORDER BY l.id DESC LIMIT ? OFFSET ?");
             $st->bindValue(1, $limit, PDO::PARAM_INT);
+            $st->bindValue(2, max(0, $offset), PDO::PARAM_INT);
             $st->execute();
             return $st->fetchAll();
         } catch (\Throwable $e) { return []; }

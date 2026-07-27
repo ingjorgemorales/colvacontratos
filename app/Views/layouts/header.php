@@ -26,6 +26,8 @@ $routeTitles = [
     'agente' => 'Agente de polizas',
 ];
 $pageTitle = $routeTitles[$route] ?? 'ColvaContratos';
+// Alertas pendientes reales (vencidos + por vencer en 30 días) para el indicador.
+$alertCount = $isLogged ? \App\Models\Alert::pendingCount() : 0;
 ?>
 <!doctype html>
 <html lang="es">
@@ -39,7 +41,7 @@ $pageTitle = $routeTitles[$route] ?? 'ColvaContratos';
   <link href="assets/css/inteligencia.css?v=20260528_professional" rel="stylesheet">
   <link href="assets/css/parametricas.css?v=20260528_professional" rel="stylesheet">
   <link href="assets/css/policy_reviews.css?v=20260528_professional" rel="stylesheet">
-  <link href="assets/css/ui-modern.css?v=20260528_professional" rel="stylesheet">
+  <link href="assets/css/ui-modern.css?v=20260724_btnfix" rel="stylesheet">
 </head>
 <body class="<?= $isLogged ? 'app-shell app-shell-pro ui-shell modern-shell' : 'login-shell' ?>">
 <div class="app-loader" id="appLoader" aria-hidden="true">
@@ -167,7 +169,7 @@ $pageTitle = $routeTitles[$route] ?? 'ColvaContratos';
       <a class="<?= str_starts_with($route,'reports')?'active':'' ?>" href="index.php?r=reports"><i class="bi bi-bar-chart-line"></i><span>Reportes</span></a>
       <?php endif; ?>
       <?php if (\App\Core\Auth::can('alerts')): ?>
-      <a class="<?= str_starts_with($route,'alerts')?'active':'' ?>" href="index.php?r=alerts"><i class="bi bi-bell"></i><span>Alertas</span><em class="alert-pill">8</em></a>
+      <a class="<?= str_starts_with($route,'alerts')?'active':'' ?>" href="index.php?r=alerts"><i class="bi bi-bell"></i><span>Alertas</span><?php if ($alertCount > 0): ?><em class="alert-pill"><?= $alertCount ?></em><?php endif; ?></a>
       <?php endif; ?>
       <?php if (\App\Core\Auth::can('intelligence')): ?>
       <a class="<?= str_starts_with($route,'intelligence')?'active':'' ?>" href="index.php?r=intelligence"><i class="bi bi-cpu"></i><span>Inteligencia KPI</span></a>
@@ -203,8 +205,7 @@ $pageTitle = $routeTitles[$route] ?? 'ColvaContratos';
         <button class="btn btn-primary" aria-label="Buscar"><i class="bi bi-search"></i></button>
       </form>
       <div class="ui-icons">
-        <a href="index.php?r=alerts" class="top-icon" title="Alertas"><i class="bi bi-bell"></i><span>5</span></a>
-        <a href="index.php?r=alerts" class="top-icon" title="Mensajes"><i class="bi bi-envelope"></i><span>3</span></a>
+        <a href="index.php?r=alerts" class="top-icon" title="Alertas"><i class="bi bi-bell"></i><?php if ($alertCount > 0): ?><span><?= $alertCount ?></span><?php endif; ?></a>
       </div>
       <div class="top-user">
         <a href="index.php?r=perfil" style="text-decoration:none;color:inherit" title="Mi perfil"><?= htmlspecialchars($user['name'] ?? 'Administrador') ?></a>

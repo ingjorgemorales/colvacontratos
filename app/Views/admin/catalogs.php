@@ -99,7 +99,7 @@ $grouped=[]; foreach(($groups ?? []) as $g){ $grouped[$g['category']][]=$g; }
       <div class="card-pro">
         <div class="card-pro-head d-flex justify-content-between align-items-center">
           <h5>Opciones registradas</h5>
-          <span class="badge text-bg-light"><?= count($items ?? []) ?> resultados</span>
+          <span class="badge text-bg-light"><?= isset($pg) ? number_format($pg->total, 0, ',', '.') : count($items ?? []) ?> resultados</span>
         </div>
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0 param-table">
@@ -124,6 +124,12 @@ $grouped=[]; foreach(($groups ?? []) as $g){ $grouped[$g['category']][]=$g; }
             </tbody>
           </table>
         </div>
+        <?php if (isset($pg) && $pg->pages > 1): ?>
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 px-3 py-2" style="border-top:1px solid #eef1f6">
+            <span class="text-muted" style="font-size:12.5px"><?= $pg->summary() ?></span>
+            <?= $pg->links(array_filter(['r'=>'admin.catalogs', 'group_id'=>$group_id ?? '', 'q'=>$q ?? ''])) ?>
+          </div>
+        <?php endif; ?>
       </div>
     </div>
   </div>

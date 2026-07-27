@@ -47,6 +47,7 @@ final class RolePermissionController
             $guardados++;
         }
 
+        \App\Services\Audit::log('Roles y permisos', 'Actualizó los permisos de rol', $guardados . ' rol(es)');
         Flash::set('success', "Permisos actualizados para {$guardados} rol(es).");
         header('Location: index.php?r=roles');
         exit;

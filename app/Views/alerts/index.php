@@ -93,7 +93,7 @@ $logStatusClass = static function (string $status): string {
   <section class="alert-panel">
     <div class="table-card-head">
       <div><h2>Bit&aacute;cora de alertas</h2><p>&Uacute;ltimas ejecuciones y resultado de notificaciones.</p></div>
-      <span class="filter-pill"><?= number_format(count($logs), 0, ',', '.') ?> registros</span>
+      <span class="filter-pill"><?= isset($pgLogs) ? number_format($pgLogs->total, 0, ',', '.') : number_format(count($logs), 0, ',', '.') ?> registros</span>
     </div>
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0 modern-table alerts-table">
@@ -114,5 +114,11 @@ $logStatusClass = static function (string $status): string {
         </tbody>
       </table>
     </div>
+    <?php if (isset($pgLogs) && $pgLogs->pages > 1): ?>
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 px-3 py-2" style="border-top:1px solid #eef1f6">
+        <span class="text-muted" style="font-size:12.5px"><?= $pgLogs->summary() ?></span>
+        <?= $pgLogs->links(array_filter(['r'=>'alerts', 'days'=>$days ?? null]), 'lpage') ?>
+      </div>
+    <?php endif; ?>
   </section>
 </section>

@@ -27,14 +27,34 @@ final class IntelligencePro
         return $k;
     }
 
-    public static function insights(): array
+    public static function insights(int $limit = 20, int $offset = 0): array
     {
-        try { return self::db()->query("SELECT * FROM contract_ai_insights WHERE status='abierta' ORDER BY FIELD(severity,'critica','alta','media','baja'), created_at DESC LIMIT 120")->fetchAll(); } catch (\Throwable $e) { return []; }
+        $limit = max(1, min(200, $limit)); $offset = max(0, $offset);
+        try {
+            return self::db()->query(
+                "SELECT * FROM contract_ai_insights WHERE status='abierta'
+                 ORDER BY FIELD(severity,'critica','alta','media','baja'), created_at DESC
+                 LIMIT {$offset}, {$limit}"
+            )->fetchAll();
+        } catch (\Throwable $e) { return []; }
     }
 
-    public static function logs(): array
+    public static function countInsights(): int
     {
-        try { return self::db()->query("SELECT l.*, c.number FROM contract_alert_logs l LEFT JOIN contracts c ON c.id=l.contract_id ORDER BY l.id DESC LIMIT 80")->fetchAll(); } catch (\Throwable $e) { return []; }
+        try { return (int) self::db()->query("SELECT COUNT(*) FROM contract_ai_insights WHERE status='abierta'")->fetchColumn(); }
+        catch (\Throwable $e) { return 0; }
+    }
+
+    public static function logs(int $limit = 10, int $offset = 0): array
+    {
+        $limit = max(1, min(200, $limit)); $offset = max(0, $offset);
+        try { return self::db()->query("SELECT l.*, c.number FROM contract_alert_logs l LEFT JOIN contracts c ON c.id=l.contract_id ORDER BY l.id DESC LIMIT {$offset}, {$limit}")->fetchAll(); } catch (\Throwable $e) { return []; }
+    }
+
+    public static function countLogs(): int
+    {
+        try { return (int) self::db()->query("SELECT COUNT(*) FROM contract_alert_logs")->fetchColumn(); }
+        catch (\Throwable $e) { return 0; }
     }
 
     public static function byArea(): array

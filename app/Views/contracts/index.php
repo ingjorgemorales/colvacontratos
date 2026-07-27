@@ -82,7 +82,7 @@ $riskInfo = function($days): array {
     <div class="table-card-head">
       <div>
         <h2>Contratos encontrados</h2>
-        <p><?= (int)$totalRows ?> registros cargados en esta consulta</p>
+        <p><?= isset($pg) ? htmlspecialchars($pg->summary(), ENT_QUOTES, 'UTF-8') . ' registros' : ((int)$totalRows . ' registros') ?></p>
       </div>
       <?php if($activeFilters): ?><span class="filter-pill"><?= count($activeFilters) ?> filtros activos</span><?php endif; ?>
     </div>
@@ -170,5 +170,11 @@ $riskInfo = function($days): array {
         <div class="empty-state">No hay contratos para mostrar.</div>
       <?php endif; ?>
     </div>
+    <?php if (isset($pg) && $pg->pages > 1): ?>
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 px-3 py-2" style="border-top:1px solid #eef1f6">
+        <span class="text-muted" style="font-size:12.5px"><?= $pg->summary() ?></span>
+        <?= $pg->links(array_filter(['r'=>'contracts'] + ($filters ?? []))) ?>
+      </div>
+    <?php endif; ?>
   </div>
 </section>
