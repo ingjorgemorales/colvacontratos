@@ -63,6 +63,8 @@
     badge.className = 'ag-badge-global ' + (ok ? 'ok' : 'no');
     badge.textContent = ok ? '✔ PÓLIZA APROBADA' : '⚠ PÓLIZA OBSERVADA';
 
+    pintarConsumo(d.uso_tokens);
+
     const adv = $('ag-advertencias');
     if (d.advertencias && d.advertencias.length) { adv.style.display = 'block'; adv.innerHTML = d.advertencias.map(a => '<div>' + esc(a) + '</div>').join(''); }
     else adv.style.display = 'none';
@@ -92,6 +94,29 @@
         '<td class="' + (r.ok_hasta ? '' : 'ag-bad') + '">' + esc(r.hasta_poliza || '—') + '</td>' +
         '<td><span class="ag-pill ' + cls + '">' + (r.ok ? 'CUMPLE' : 'NO CUMPLE') + '</span></td></tr>';
     }).join('');
+  }
+
+  // ── Informe de consumo de tokens ──
+  function pintarConsumo(u) {
+    const box = $('ag-consumo');
+    if (!box) return;
+    if (!u || !u.total) { box.style.display = 'none'; return; }
+    const n = (v) => (Number(v) || 0).toLocaleString('es-CO');
+    // Avisos: entrada alta (cupo gratuito Gemini) o respuesta truncada.
+    const avisos = [];
+    if (u.entrada > 16000) avisos.push('La entrada supera 16.000 tokens: excede el cupo gratuito de Gemini y ralentiza a los demás motores.');
+    if (u.tope_salida_motor && u.salida >= u.tope_salida_motor * 0.95) avisos.push('La respuesta llegó al tope de salida del motor: puede venir incompleta. Sube «Tokens» en Claves APIs.');
+    box.style.display = 'block';
+    box.innerHTML =
+      '<div class="ag-consumo-head"><i class="bi bi-speedometer2"></i> Consumo del análisis'
+      + '<span class="ag-consumo-modelo">' + esc(u.modelo_id || '') + '</span></div>'
+      + '<div class="ag-consumo-grid">'
+      + '  <div><span>Entrada</span><strong>' + n(u.entrada) + '</strong><em>tokens</em></div>'
+      + '  <div><span>Salida</span><strong>' + n(u.salida) + '</strong><em>de ' + n(u.tope_salida_motor) + ' máx.</em></div>'
+      + '  <div><span>Total</span><strong>' + n(u.total) + '</strong><em>tokens</em></div>'
+      + '  <div><span>Documentos</span><strong>' + n(u.chars_contrato + u.chars_polizas) + '</strong><em>caracteres</em></div>'
+      + '</div>'
+      + (avisos.length ? '<div class="ag-consumo-aviso">' + avisos.map(a => '<div>⚠ ' + esc(a) + '</div>').join('') + '</div>' : '');
   }
 
   // ── Recalcular fechas ──

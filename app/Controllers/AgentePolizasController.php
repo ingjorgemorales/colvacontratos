@@ -62,7 +62,9 @@ final class AgentePolizasController
     public function proxy(): void
     {
         Auth::requireLogin();
-        @set_time_limit(300);
+        // PHP debe aguantar algo más que el timeout de la llamada, para que el
+        // corte lo decida cURL (con mensaje claro) y no un fallo seco de PHP.
+        @set_time_limit(AgentClient::timeout() + 60);
 
         $path = (string) ($_GET['path'] ?? '');
         if ($path === '' || $path[0] !== '/' || strpos($path, '..') !== false || strpos($path, '/api/') !== 0) {
@@ -122,13 +124,27 @@ final class AgentePolizasController
         $body = curl_exec($ch);
         $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $err = curl_error($ch);
+        $errno = curl_errno($ch);
         curl_close($ch);
 
         if ($body === false) {
-            http_response_code(502);
+            // Se distingue el caso "tardó demasiado" del caso "no está encendido":
+            // con un modelo lento y documentos grandes el analisis puede superar
+            // el limite, y el mensaje generico hacia buscar el problema donde no era.
+            if ($errno === CURLE_OPERATION_TIMEDOUT) {
+                $seg = AgentClient::timeout();
+                $msg = "El análisis superó el tiempo límite de {$seg} segundos y se canceló. "
+                     . "El motor sigue encendido: el modelo elegido es lento o los documentos son muy extensos. "
+                     . "Prueba con otro motor (Gemini o ChatGPT suelen ser más rápidos) o sube documentos más pequeños.";
+                $codigo = 504;   // Gateway Timeout
+            } else {
+                $msg = 'No se pudo conectar con el motor del agente: ' . $err
+                     . '. Verifica que el agente Flask esté encendido.';
+                $codigo = 502;   // Bad Gateway
+            }
+            http_response_code($codigo);
             header('Content-Type: application/json');
-            echo json_encode(['error' => 'No se pudo conectar con el motor del agente: ' . $err
-                . '. Verifica que el agente Flask esté encendido.']);
+            echo json_encode(['error' => $msg]);
             exit;
         }
 

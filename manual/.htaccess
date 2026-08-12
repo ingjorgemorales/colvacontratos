@@ -1,0 +1,19 @@
+# Bloquea el acceso directo por URL a esta carpeta.
+#
+# El Manual de Usuario debe entregarse SIEMPRE a traves de
+# index.php?r=ayuda.manual  (AyudaController), que exige sesion iniciada.
+#
+# En un despliegue correcto el DocumentRoot apunta a public/ y esta carpeta ya
+# queda fuera del alcance del servidor web. Este archivo protege el caso en que
+# el proyecto se sirva desde su raiz (por ejemplo, Laragon en desarrollo).
+
+<IfModule mod_authz_core.c>
+    # Apache 2.4
+    Require all denied
+</IfModule>
+
+<IfModule !mod_authz_core.c>
+    # Apache 2.2
+    Order allow,deny
+    Deny from all
+</IfModule>

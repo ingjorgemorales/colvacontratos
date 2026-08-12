@@ -206,6 +206,7 @@ $alertCount = $isLogged ? \App\Models\Alert::pendingCount() : 0;
       </form>
       <div class="ui-icons">
         <a href="index.php?r=alerts" class="top-icon" title="Alertas"><i class="bi bi-bell"></i><?php if ($alertCount > 0): ?><span><?= $alertCount ?></span><?php endif; ?></a>
+        <a href="index.php?r=ayuda.manual" class="top-icon top-icon-ayuda" target="_blank" rel="noopener" title="Manual de Usuario" aria-label="Abrir el Manual de Usuario"><i class="bi bi-question-lg"></i></a>
       </div>
       <div class="top-user">
         <a href="index.php?r=perfil" style="text-decoration:none;color:inherit" title="Mi perfil"><?= htmlspecialchars($user['name'] ?? 'Administrador') ?></a>

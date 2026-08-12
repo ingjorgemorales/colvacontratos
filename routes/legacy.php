@@ -21,8 +21,13 @@ use App\Controllers\PolicyReviewController;
 use App\Controllers\AgentePolizasController;
 use App\Controllers\ProfileController;
 use App\Controllers\RolePermissionController;
+use App\Controllers\AyudaController;
 
 $routes = [
+    // Ayuda — Manual de Usuario en PDF (botón «?» de la barra superior).
+    // Sin módulo asociado en RolePermission: lo abre cualquier usuario con sesión.
+    'ayuda.manual' => [AyudaController::class, 'manual'],
+
     // Roles y permisos (solo rol admin)
     'roles' => [RolePermissionController::class, 'index'],
     'roles.save' => [RolePermissionController::class, 'save'],

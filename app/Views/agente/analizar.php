@@ -1,7 +1,7 @@
 <?php
 $motores = $motores ?? [];
 ?>
-<link rel="stylesheet" href="assets/css/agente.css?v=2">
+<link rel="stylesheet" href="assets/css/agente.css?v=3">
 
 <section class="agente-modern">
   <div class="ag-hero">
@@ -81,6 +81,7 @@ $motores = $motores ?? [];
         <div class="ag-card-title mb-0"><span class="bar"></span> Resultado de validación</div>
         <span class="ag-badge-global" id="ag-badge"></span>
       </div>
+      <div id="ag-consumo" class="ag-consumo" style="display:none"></div>
       <div id="ag-advertencias" class="ag-alert-warn" style="display:none;margin-bottom:12px"></div>
 
       <div class="ag-info-grid">
@@ -129,4 +130,4 @@ $motores = $motores ?? [];
 </section>
 
 <script>window.AG_PROXY = 'index.php?r=agente.proxy&path=';</script>
-<script src="assets/js/agente-analizar.js?v=2"></script>
+<script src="assets/js/agente-analizar.js?v=3"></script>
