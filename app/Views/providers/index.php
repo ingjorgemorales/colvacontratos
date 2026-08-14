@@ -56,8 +56,8 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
   <div class="module-hero providers-hero">
     <div>
       <span class="section-eyebrow">Maestro de terceros</span>
-      <h1>Proveedores</h1>
-      <p>Consulta, clasifica y administra los contratistas registrados en ColvaContratos.</p>
+      <h1>Contraparte</h1>
+      <p>Consulta, clasifica y administra las contrapartes registradas en ColvaContratos.</p>
     </div>
     <div class="module-actions">
       <a class="btn btn-outline-success" href="<?= htmlspecialchars($exportUrl) ?>">
@@ -66,7 +66,7 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
       </a>
       <a class="btn btn-primary" href="index.php?r=providers.create">
         <i class="bi bi-plus-lg"></i>
-        <span>Nuevo proveedor</span>
+        <span>Nueva Contraparte</span>
       </a>
     </div>
   </div>
@@ -74,7 +74,7 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
   <div class="provider-summary-strip">
     <article>
       <i class="bi bi-buildings"></i>
-      <span>Total proveedores</span>
+      <span>Total Contrapartes</span>
       <strong><?= number_format($total, 0, ',', '.') ?></strong>
     </article>
     <article>
@@ -84,7 +84,7 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
     </article>
     <article>
       <i class="bi bi-envelope-check"></i>
-      <span>Con correo</span>
+      <span>Con correo notif.</span>
       <strong><?= number_format($withEmail, 0, ',', '.') ?></strong>
     </article>
     <article>
@@ -101,7 +101,7 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
         <span>Busqueda rapida</span>
         <div class="input-group">
           <span class="input-group-text"><i class="bi bi-search"></i></span>
-          <input class="form-control" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="NIT, proveedor, correo, ciudad o clasificacion">
+          <input class="form-control" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="NIT, contraparte, correo, ciudad o clasificacion">
         </div>
       </label>
       <div class="filter-actions">
@@ -116,7 +116,7 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
   <div class="providers-table-card">
     <div class="table-card-head">
       <div>
-        <h2>Directorio de proveedores</h2>
+        <h2>Directorio</h2>
         <p><?= $q !== '' ? 'Resultados filtrados por "' . htmlspecialchars($q) . '".' : 'Listado completo ordenado alfabeticamente.' ?></p>
       </div>
       <span class="filter-pill"><?= number_format($total, 0, ',', '.') ?> registros</span>
@@ -127,10 +127,10 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
         <thead>
           <tr>
             <th>NIT/ID</th>
-            <th>Proveedor</th>
+            <th>Contraparte</th>
             <th>Clasificacion</th>
             <th>Ciudad</th>
-            <th>Contacto</th>
+            <th>Correo Notificaciones</th>
             <th>Estado</th>
             <th class="text-end">Acciones</th>
           </tr>
@@ -158,8 +158,7 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
               </td>
               <td><?= htmlspecialchars($city) ?></td>
               <td>
-                <strong><?= htmlspecialchars($p['contact_name'] ?: 'Sin contacto') ?></strong>
-                <small><?= htmlspecialchars($p['email'] ?: 'Sin correo') ?></small>
+                <?= htmlspecialchars($p['email'] ?: 'Sin correo') ?>
               </td>
               <td>
                 <span class="status-badge <?= $isActive ? 'provider-active' : 'provider-inactive' ?>">
@@ -169,7 +168,7 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
               </td>
               <td class="text-end">
                 <div class="row-actions">
-                  <a class="icon-action" href="index.php?r=providers.edit&id=<?= (int)$p['id'] ?>" title="Editar proveedor" aria-label="Editar proveedor">
+                  <a class="icon-action" href="index.php?r=providers.edit&id=<?= (int)$p['id'] ?>" title="Editar contraparte" aria-label="Editar contraparte">
                     <i class="bi bi-pencil-square"></i>
                   </a>
                 </div>
@@ -181,8 +180,8 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
               <td colspan="7">
                 <div class="empty-state">
                   <i class="bi bi-search"></i>
-                  <strong>No hay proveedores para mostrar</strong>
-                  <span>Revisa el filtro aplicado o crea un nuevo proveedor.</span>
+                  <strong>No hay contrapartes para mostrar</strong>
+                  <span>Revisa el filtro aplicado o crea una nueva contraparte.</span>
                 </div>
               </td>
             </tr>
@@ -211,7 +210,7 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
           </div>
           <dl>
             <div>
-              <dt>Tipo proveedor</dt>
+              <dt>Tipo Contraparte</dt>
               <dd><?= htmlspecialchars($p['type_name'] ?? 'Sin tipo') ?></dd>
             </div>
             <div>
@@ -219,11 +218,7 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
               <dd><?= htmlspecialchars($city) ?></dd>
             </div>
             <div>
-              <dt>Contacto</dt>
-              <dd><?= htmlspecialchars($p['contact_name'] ?: 'Sin contacto') ?></dd>
-            </div>
-            <div>
-              <dt>Correo</dt>
+              <dt>Correo Notificaciones</dt>
               <dd><?= htmlspecialchars($p['email'] ?: 'Sin correo') ?></dd>
             </div>
             <div class="provider-card-wide">
@@ -232,15 +227,15 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
             </div>
           </dl>
           <a class="btn btn-outline-primary" href="index.php?r=providers.edit&id=<?= (int)$p['id'] ?>">
-            <i class="bi bi-pencil-square"></i> Editar proveedor
+            <i class="bi bi-pencil-square"></i> Editar contraparte
           </a>
         </article>
       <?php endforeach; ?>
       <?php if (empty($providers)): ?>
         <div class="empty-state">
           <i class="bi bi-search"></i>
-          <strong>No hay proveedores para mostrar</strong>
-          <span>Revisa el filtro aplicado o crea un nuevo proveedor.</span>
+          <strong>No hay contrapartes para mostrar</strong>
+          <span>Revisa el filtro aplicado o crea una nueva contraparte.</span>
         </div>
       <?php endif; ?>
     </div>

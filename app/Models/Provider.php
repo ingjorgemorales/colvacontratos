@@ -3,6 +3,14 @@ namespace App\Models;
 use App\Core\Database;
 
 final class Provider {
+    public static function profileLabel(string $profile): string {
+        return match ($profile) {
+            'cliente' => 'Cliente',
+            'subcontratista' => 'Subcontratista',
+            default => 'Proveedor',
+        };
+    }
+
     /** Total de proveedores que cumplen la búsqueda (para la paginación). */
     public static function countAll(string $q=''): int {
         $base = 'SELECT COUNT(*) FROM providers p
@@ -46,9 +54,13 @@ final class Provider {
     }
     public static function exportRows(string $q=""): array { return self::all($q); }
     public static function find(int $id): ?array { $st=Database::pdo()->prepare('SELECT * FROM providers WHERE id=?'); $st->execute([$id]); return $st->fetch() ?: null; }
-    public static function cities(): array { return Database::pdo()->query('SELECT id,name,department FROM provider_cities WHERE active=1 ORDER BY name')->fetchAll(); }
-    public static function types(): array { return Database::pdo()->query('SELECT id,name FROM provider_types WHERE active=1 ORDER BY name')->fetchAll(); }
-    private static function catalog(string $table): array { return Database::pdo()->query("SELECT id,code,name FROM `{$table}` WHERE active=1 ORDER BY sort_order,name")->fetchAll(); }
+    public static function cities(): array { return Database::pdo()->query('SELECT id,name,department FROM provider_cities WHERE active=1 ORDER BY department,name')->fetchAll(); }
+    public static function types(): array {
+        return Database::pdo()->query("SELECT id,name FROM provider_types WHERE active=1 AND (LOWER(name) LIKE '%natural%' OR LOWER(name) LIKE '%jur%') ORDER BY CASE WHEN LOWER(name) LIKE '%natural%' THEN 1 ELSE 2 END, name")->fetchAll();
+    }
+    private static function catalog(string $table): array {
+        return Database::pdo()->query("SELECT MIN(id) id, MIN(code) code, SUBSTRING_INDEX(GROUP_CONCAT(name ORDER BY id SEPARATOR '||'), '||', 1) name FROM `{$table}` WHERE active=1 GROUP BY COALESCE(NULLIF(code,''), name) ORDER BY MIN(sort_order), name")->fetchAll();
+    }
     public static function tipoContratista(): array { return self::catalog('catalog_tipo_contratista'); }
     public static function tipoPersona(): array { return self::catalog('catalog_tipo_persona'); }
     public static function naturaleza(): array { return self::catalog('catalog_naturaleza'); }
@@ -69,12 +81,12 @@ final class Provider {
     }
     public static function create(array $d): int {
         $pdo=Database::pdo();
-        $sql='INSERT INTO providers (document_number,verification_digit,name,address,phone,email,city,city_id,provider_type_id,tipo_contratista_id,tipo_persona_id,naturaleza_id,clasificacion_id,nacionalidad_contratista_id,clase_contratista_id,consortium_members_json,contact_name,notes,active) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
+        $sql='INSERT INTO providers (document_number,verification_digit,name,address,phone,email,city,city_id,provider_type_id,counterparty_profile,tipo_contratista_id,tipo_persona_id,naturaleza_id,clasificacion_id,nacionalidad_contratista_id,clase_contratista_id,consortium_members_json,contact_name,notes,active) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
         $pdo->prepare($sql)->execute(self::payload($d));
         return (int)$pdo->lastInsertId();
     }
     public static function update(int $id, array $d): void {
-        $sql='UPDATE providers SET document_number=?,verification_digit=?,name=?,address=?,phone=?,email=?,city=?,city_id=?,provider_type_id=?,tipo_contratista_id=?,tipo_persona_id=?,naturaleza_id=?,clasificacion_id=?,nacionalidad_contratista_id=?,clase_contratista_id=?,consortium_members_json=?,contact_name=?,notes=?,active=? WHERE id=?';
+        $sql='UPDATE providers SET document_number=?,verification_digit=?,name=?,address=?,phone=?,email=?,city=?,city_id=?,provider_type_id=?,counterparty_profile=?,tipo_contratista_id=?,tipo_persona_id=?,naturaleza_id=?,clasificacion_id=?,nacionalidad_contratista_id=?,clase_contratista_id=?,consortium_members_json=?,contact_name=?,notes=?,active=? WHERE id=?';
         $p=self::payload($d); $p[]=$id; Database::pdo()->prepare($sql)->execute($p);
     }
     private static function intOrNull(array $d, string $key): ?int { $v=(int)($d[$key]??0); return $v>0?$v:null; }
@@ -94,6 +106,7 @@ final class Provider {
             trim($d['city']??''),
             self::intOrNull($d,'city_id'),
             self::intOrNull($d,'provider_type_id'),
+            self::profileValue((string)($d['counterparty_profile'] ?? 'proveedor')),
             self::intOrNull($d,'tipo_contratista_id'),
             self::intOrNull($d,'tipo_persona_id'),
             self::intOrNull($d,'naturaleza_id'),
@@ -105,5 +118,9 @@ final class Provider {
             trim($d['notes']??''),
             isset($d['active'])?1:0
         ];
+    }
+
+    private static function profileValue(string $value): string {
+        return in_array($value, ['cliente', 'proveedor', 'subcontratista'], true) ? $value : 'proveedor';
     }
 }

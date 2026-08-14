@@ -11,7 +11,16 @@ final class LegacyRouterController extends Controller
     public function __invoke(Request $request): Response
     {
         if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+            if (!headers_sent()) {
+                $lifetime = max(7200, (int) config('session.lifetime', 120) * 60);
+                ini_set('session.gc_maxlifetime', (string) $lifetime);
+                ini_set('session.cookie_lifetime', '0');
+            }
+            if (!headers_sent()) {
+                session_start();
+            } else {
+                @session_start();
+            }
         }
 
         $route = (string) $request->query('r', 'dashboard');

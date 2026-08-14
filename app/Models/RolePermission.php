@@ -24,7 +24,7 @@ final class RolePermission
     public const MODULOS = [
         'dashboard'    => ['label' => 'Indicadores',         'icono' => 'bi-speedometer2',      'rutas' => ['dashboard']],
         'contracts'    => ['label' => 'Contratos',           'icono' => 'bi-file-earmark-text', 'rutas' => ['contracts']],
-        'providers'    => ['label' => 'Proveedores',         'icono' => 'bi-building',          'rutas' => ['providers']],
+        'providers'    => ['label' => 'Directorio',          'icono' => 'bi-building',          'rutas' => ['providers']],
         'parametricas' => ['label' => 'Paramétricas',        'icono' => 'bi-gear-fill',         'rutas' => ['admin.catalogs', 'areas', 'admin.providers']],
         'documents'    => ['label' => 'Documental',          'icono' => 'bi-paperclip',         'rutas' => ['documents', 'documentflow']],
         'polizas'      => ['label' => 'Revisión de pólizas', 'icono' => 'bi-shield-check',      'rutas' => ['polizas', 'policy_reviews']],

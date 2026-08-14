@@ -63,8 +63,8 @@ final class AdminController {
         exit;
     }
     public function providers(): void { $this->base('providers', ['providers'=>Admin::providers(trim($_GET['q']??'')), 'q'=>trim($_GET['q']??'')]); }
-    public function providerStore(): void { Auth::requireLogin(); Admin::createProvider($_POST); Flash::set('success','Proveedor creado correctamente.'); header('Location: index.php?r=admin.providers'); exit; }
-    public function providerUpdate(): void { Auth::requireLogin(); Admin::updateProvider((int)($_GET['id']??0), $_POST); Flash::set('success','Proveedor actualizado.'); header('Location: index.php?r=admin.providers'); exit; }
+    public function providerStore(): void { Auth::requireLogin(); Admin::createProvider($_POST); Flash::set('success','Contraparte creada correctamente.'); header('Location: index.php?r=admin.providers'); exit; }
+    public function providerUpdate(): void { Auth::requireLogin(); Admin::updateProvider((int)($_GET['id']??0), $_POST); Flash::set('success','Contraparte actualizada.'); header('Location: index.php?r=admin.providers'); exit; }
     public function supervisors(): void { $this->base('supervisors', ['supervisors'=>Admin::supervisors(), 'users'=>Admin::users()]); }
     public function supervisorStore(): void { Auth::requireLogin(); Admin::createSupervisor($_POST); Flash::set('success','Supervisor creado correctamente.'); header('Location: index.php?r=admin.supervisors'); exit; }
     public function supervisorUpdate(): void { Auth::requireLogin(); Admin::updateSupervisor((int)($_GET['id']??0), $_POST); Flash::set('success','Supervisor actualizado.'); header('Location: index.php?r=admin.supervisors'); exit; }

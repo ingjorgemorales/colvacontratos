@@ -32,7 +32,7 @@ final class ReportController {
     private function providerCatalogs(): array {
         $pdo = Database::pdo();
         $get = function(string $table) use ($pdo): array {
-            try { return $pdo->query("SELECT id, name AS nombre FROM $table ORDER BY name ASC")->fetchAll(); }
+            try { return $pdo->query("SELECT MIN(id) id, SUBSTRING_INDEX(GROUP_CONCAT(name ORDER BY id SEPARATOR '||'), '||', 1) nombre FROM $table WHERE COALESCE(active,1)=1 GROUP BY COALESCE(NULLIF(code,''), name) ORDER BY nombre ASC")->fetchAll(); }
             catch (\Throwable $e) { return []; }
         };
         return [
@@ -71,12 +71,12 @@ final class ReportController {
     public function exportProvidersExcel(): void {
         Auth::requireLogin();
         $rows = Report::providers($_GET);
-        $headers = ['NIT/ID','DV','Proveedor','Tipo proveedor','Tipo contratista','Tipo persona','Naturaleza','Clasificacion','Nacionalidad','Clase contratista','Ciudad','Telefono','Contacto','Correo','Estado','Contratos','Valor contratos'];
+        $headers = ['NIT/ID','DV','Contraparte','Perfil contraparte','Tipo contraparte','Tipo contratista','Tipo persona','Naturaleza','Clasificacion','Nacionalidad','Clase contratista','Ciudad','Telefono','Correo Notificaciones','Estado','Contratos','Valor contratos'];
         $data=[];
         foreach ($rows as $r) {
-            $data[] = [$r['document_number'] ?? '',$r['verification_digit'] ?? '',$r['name'] ?? '',$r['tipo_proveedor'] ?? '',$r['tipo_contratista'] ?? '',$r['tipo_persona'] ?? '',$r['naturaleza'] ?? '',$r['clasificacion'] ?? '',$r['nacionalidad'] ?? '',$r['clase_contratista'] ?? '',$r['city'] ?? '',$r['phone'] ?? '',$r['contact_name'] ?? '',$r['email'] ?? '',!empty($r['active'])?'Activo':'Inactivo',$r['contratos_total'] ?? 0,$r['contratos_valor'] ?? 0];
+            $data[] = [$r['document_number'] ?? '',$r['verification_digit'] ?? '',$r['name'] ?? '',Provider::profileLabel((string)($r['counterparty_profile'] ?? 'proveedor')),$r['tipo_proveedor'] ?? '',$r['tipo_contratista'] ?? '',$r['tipo_persona'] ?? '',$r['naturaleza'] ?? '',$r['clasificacion'] ?? '',$r['nacionalidad'] ?? '',$r['clase_contratista'] ?? '',$r['city'] ?? '',$r['phone'] ?? '',$r['email'] ?? '',!empty($r['active'])?'Activo':'Inactivo',$r['contratos_total'] ?? 0,$r['contratos_valor'] ?? 0];
         }
-        $this->downloadExcel('reporte_proveedores', 'Proveedores', $headers, $data);
+        $this->downloadExcel('reporte_directorio', 'Directorio', $headers, $data);
     }
 
     public function exportFinancialExcel(): void {
@@ -109,9 +109,9 @@ final class ReportController {
         $data = [];
         foreach (($analytics['riesgo'] ?? []) as $r) { $data[] = ['Riesgo contractual', $r['label'] ?? '', $r['total'] ?? 0, $r['value'] ?? 0]; }
         foreach (($analytics['areas'] ?? []) as $r) { $data[] = ['Contratos por area', $r['label'] ?? '', $r['total'] ?? 0, $r['value'] ?? 0]; }
-        foreach (($analytics['proveedores_clasificacion'] ?? []) as $r) { $data[] = ['Proveedores por clasificacion', $r['label'] ?? '', $r['total'] ?? 0, $r['value'] ?? 0]; }
-        foreach (($analytics['proveedores_tipo'] ?? []) as $r) { $data[] = ['Proveedores por tipo contratista', $r['label'] ?? '', $r['total'] ?? 0, $r['value'] ?? 0]; }
-        foreach (($analytics['financiero_proveedor'] ?? []) as $r) { $data[] = ['Top proveedores por valor', $r['label'] ?? '', $r['total'] ?? 0, $r['value'] ?? 0]; }
+        foreach (($analytics['proveedores_clasificacion'] ?? []) as $r) { $data[] = ['Contrapartes por clasificacion', $r['label'] ?? '', $r['total'] ?? 0, $r['value'] ?? 0]; }
+        foreach (($analytics['proveedores_tipo'] ?? []) as $r) { $data[] = ['Contrapartes por tipo contratista', $r['label'] ?? '', $r['total'] ?? 0, $r['value'] ?? 0]; }
+        foreach (($analytics['financiero_proveedor'] ?? []) as $r) { $data[] = ['Top contrapartes por valor', $r['label'] ?? '', $r['total'] ?? 0, $r['value'] ?? 0]; }
         foreach (($analytics['documentos_estado'] ?? []) as $r) { $data[] = ['Documentos por estado firma', $r['label'] ?? '', $r['total'] ?? 0, $r['value'] ?? 0]; }
         $this->downloadExcel('reporte_analitica_gerencial', 'Analitica Gerencial', $headers, $data);
     }
@@ -124,10 +124,10 @@ final class ReportController {
             $data[] = ['Alertas vencimiento', $r['number'] ?? '', $r['name'] ?? '', $r['days_left'] ?? '', $r['total_value'] ?? 0, $r['risk_level'] ?? ''];
         }
         foreach (($intel['provider_risk'] ?? []) as $r) {
-            $data[] = ['Riesgo proveedor', $r['provider_name'] ?? '', 'Contratos: '.($r['contracts_total'] ?? 0).' | Vencidos: '.($r['expired_total'] ?? 0).' | Rojo: '.($r['red_total'] ?? 0), $r['contracts_total'] ?? 0, $r['contract_value'] ?? 0, $r['risk_score'] ?? 0];
+            $data[] = ['Riesgo contraparte', $r['provider_name'] ?? '', 'Contratos: '.($r['contracts_total'] ?? 0).' | Vencidos: '.($r['expired_total'] ?? 0).' | Rojo: '.($r['red_total'] ?? 0), $r['contracts_total'] ?? 0, $r['contract_value'] ?? 0, $r['risk_score'] ?? 0];
         }
         foreach (($intel['inactive_providers'] ?? []) as $r) {
-            $data[] = ['Proveedor sin actividad', $r['name'] ?? '', $r['document_number'] ?? '', 0, 0, 'SIN CONTRATOS'];
+            $data[] = ['Contraparte sin actividad', $r['name'] ?? '', $r['document_number'] ?? '', 0, 0, 'SIN CONTRATOS'];
         }
         foreach (($intel['missing_docs'] ?? []) as $r) {
             $data[] = ['Documentos pendientes', $r['number'] ?? '', $r['name'] ?? '', $r['pending_docs'] ?? 0, $r['total_value'] ?? 0, 'DOCUMENTAL'];

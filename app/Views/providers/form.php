@@ -16,15 +16,21 @@ $members = json_decode((string)($p['consortium_members_json'] ?? '[]'), true);
 if (!is_array($members)) {
     $members = [];
 }
+$profile = (string)($p['counterparty_profile'] ?? 'proveedor');
+$profileOptions = [
+    'proveedor' => 'Proveedor',
+    'cliente' => 'Cliente',
+    'subcontratista' => 'Subcontratista',
+];
 ?>
 
 <section class="provider-form-modern">
   <div class="module-hero form-hero">
     <div>
-      <a class="back-link" href="index.php?r=providers"><i class="bi bi-arrow-left"></i> Volver a proveedores</a>
-      <span class="section-eyebrow"><?= $isEdit ? 'Edicion de tercero' : 'Nuevo tercero' ?></span>
-      <h1><?= htmlspecialchars($title ?? ($isEdit ? 'Editar proveedor' : 'Nuevo proveedor'), ENT_QUOTES, 'UTF-8') ?></h1>
-      <p>Actualiza los datos del contratista, su clasificacion y la informacion de contacto.</p>
+      <a class="back-link" href="index.php?r=providers"><i class="bi bi-arrow-left"></i> Volver a directorio</a>
+      <span class="section-eyebrow"><?= $isEdit ? 'Edicion de contraparte' : 'Nueva contraparte' ?></span>
+      <h1><?= htmlspecialchars($title ?? ($isEdit ? 'Editar contraparte' : 'Nueva Contraparte'), ENT_QUOTES, 'UTF-8') ?></h1>
+      <p>Actualiza los datos de la contraparte, su clasificacion y la informacion de notificacion.</p>
     </div>
     <div class="module-actions">
       <a class="btn btn-light" href="index.php?r=providers"><i class="bi bi-x-lg"></i> Cancelar</a>
@@ -32,13 +38,13 @@ if (!is_array($members)) {
     </div>
   </div>
 
-  <form id="providerForm" method="post" action="<?= htmlspecialchars($action, ENT_QUOTES, 'UTF-8') ?>" class="provider-form-shell">
+  <form id="providerForm" method="post" action="<?= htmlspecialchars($action, ENT_QUOTES, 'UTF-8') ?>" class="provider-form-shell" data-mode="<?= $isEdit ? 'edit-' . (int)$p['id'] : 'create' ?>">
     <section class="form-section provider-section">
       <div class="form-section-head">
         <i class="bi bi-person-vcard"></i>
         <div>
           <h2>Identificacion</h2>
-          <p>Datos principales para reconocer el proveedor en contratos y reportes.</p>
+          <p>Datos principales para reconocer la contraparte en contratos y reportes.</p>
         </div>
       </div>
       <div class="form-grid provider-form-grid">
@@ -55,7 +61,15 @@ if (!is_array($members)) {
           <input name="name" required class="form-control" value="<?= $v('name') ?>">
         </label>
         <label class="form-field wide">
-          <span>Tipo proveedor</span>
+          <span>Perfil contraparte</span>
+          <select name="counterparty_profile" id="counterpartyProfile" class="form-select">
+            <?php foreach ($profileOptions as $value => $label): ?>
+              <option value="<?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?>" <?= $profile === $value ? 'selected' : '' ?>><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
+            <?php endforeach; ?>
+          </select>
+        </label>
+        <label class="form-field wide">
+          <span>Tipo Contraparte</span>
           <select name="provider_type_id" class="form-select"><?= $sel('provider_type_id', $types ?? []) ?></select>
         </label>
         <label class="form-field wide">
@@ -63,7 +77,7 @@ if (!is_array($members)) {
           <div class="modern-check-card">
             <input class="form-check-input" type="checkbox" id="providerActive" name="active" value="1" <?= ((int)($p['active'] ?? 1) === 1) ? 'checked' : '' ?>>
             <label for="providerActive">
-              <strong>Proveedor activo</strong>
+              <strong>Contraparte activa</strong>
               <small>Disponible para seleccion y gestion contractual.</small>
             </label>
           </div>
@@ -81,7 +95,7 @@ if (!is_array($members)) {
       </div>
       <div class="form-grid provider-form-grid">
         <label class="form-field wide">
-          <span>Ciudad parametrica</span>
+          <span>Ciudad</span>
           <select name="city_id" class="form-select">
             <option value="">Seleccione...</option>
             <?php foreach (($cities ?? []) as $city): ?>
@@ -90,25 +104,19 @@ if (!is_array($members)) {
               </option>
             <?php endforeach; ?>
           </select>
+          <input type="hidden" name="city" value="<?= $v('city') ?>">
         </label>
         <label class="form-field wide">
-          <span>Ciudad texto</span>
-          <input name="city" class="form-control" value="<?= $v('city') ?>" placeholder="Usar si no esta en parametrica">
-        </label>
-        <label class="form-field wide">
-          <span>Domicilio contratista</span>
+          <span>Domicilio contraparte</span>
           <input name="address" class="form-control" value="<?= $v('address') ?>">
         </label>
         <label class="form-field small">
           <span>Telefono</span>
           <input name="phone" class="form-control" value="<?= $v('phone') ?>">
         </label>
-        <label class="form-field small">
-          <span>Nombre contacto</span>
-          <input name="contact_name" class="form-control" value="<?= $v('contact_name') ?>">
-        </label>
+        <input type="hidden" name="contact_name" value="<?= $v('contact_name') ?>">
         <label class="form-field wide">
-          <span>Email</span>
+          <span>Correo Notificaciones</span>
           <input type="email" name="email" class="form-control" value="<?= $v('email') ?>">
         </label>
       </div>
@@ -118,12 +126,12 @@ if (!is_array($members)) {
       <div class="form-section-head">
         <i class="bi bi-shield-check"></i>
         <div>
-          <h2>Clasificacion contratista</h2>
+          <h2>Clasificacion Contraparte</h2>
           <p>Parametrizacion usada para reportes, filtros y gobierno contractual.</p>
         </div>
       </div>
       <div class="form-grid provider-form-grid">
-        <label class="form-field wide">
+        <label class="form-field wide contractor-field">
           <span>Tipo contratista</span>
           <select name="tipo_contratista_id" class="form-select"><?= $sel('tipo_contratista_id', $tipoContratista ?? []) ?></select>
         </label>
@@ -139,11 +147,11 @@ if (!is_array($members)) {
           <span>Clasificacion</span>
           <select name="clasificacion_id" class="form-select"><?= $sel('clasificacion_id', $clasificacion ?? []) ?></select>
         </label>
-        <label class="form-field wide">
+        <label class="form-field wide contractor-field">
           <span>Nacionalidad del contratista</span>
           <select name="nacionalidad_contratista_id" class="form-select"><?= $sel('nacionalidad_contratista_id', $nacionalidadContratista ?? []) ?></select>
         </label>
-        <label class="form-field wide">
+        <label class="form-field wide contractor-field">
           <span>Clase contratista</span>
           <select name="clase_contratista_id" id="claseContratista" class="form-select"><?= $sel('clase_contratista_id', $claseContratista ?? []) ?></select>
         </label>
@@ -185,22 +193,66 @@ if (!is_array($members)) {
 
     <div class="form-sticky-actions">
       <a class="btn btn-light" href="index.php?r=providers"><i class="bi bi-x-lg"></i> Cancelar</a>
-      <button class="btn btn-primary" type="submit"><i class="bi bi-check2-circle"></i> Guardar proveedor</button>
+      <button class="btn btn-primary" type="submit"><i class="bi bi-check2-circle"></i> Guardar contraparte</button>
     </div>
   </form>
 </section>
 
 <script>
 (function(){
+  const form = document.getElementById('providerForm');
+  const profile = document.getElementById('counterpartyProfile');
   const selector = document.getElementById('claseContratista');
   const box = document.getElementById('utMembersBox');
+  const contractorFields = document.querySelectorAll('.contractor-field');
+  function toggleProfileFields(){
+    const isClient = (profile?.value || '') === 'cliente';
+    contractorFields.forEach((field) => {
+      field.classList.toggle('d-none', isClient);
+      field.querySelectorAll('select,input,textarea').forEach((control) => {
+        control.disabled = isClient;
+      });
+    });
+    toggleMembers();
+  }
   function toggleMembers(){
     if (!selector || !box) return;
+    const isClient = (profile?.value || '') === 'cliente';
     const text = (selector.options[selector.selectedIndex]?.text || '').toLowerCase();
-    const shouldShow = text.includes('union temporal') || text.includes('union temporal') || text.includes('consorcio');
+    const shouldShow = !isClient && (text.includes('union temporal') || text.includes('union temporal') || text.includes('consorcio'));
     box.classList.toggle('is-visible', shouldShow);
   }
+  function initDraft(){
+    if (!form || !window.localStorage) return;
+    const key = 'colvacontratos:counterparty-draft:' + (form.dataset.mode || 'create');
+    if ((form.dataset.mode || '') === 'create') {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        try {
+          const draft = JSON.parse(raw);
+          Object.entries(draft).forEach(([name, value]) => {
+            const controls = form.elements[name];
+            if (!controls) return;
+            const list = controls instanceof RadioNodeList ? Array.from(controls) : [controls];
+            list.forEach((control) => {
+              if (control.type === 'checkbox') control.checked = value === '1';
+              else if (control.type !== 'hidden') control.value = value;
+            });
+          });
+        } catch (error) {}
+      }
+    }
+    form.addEventListener('input', () => {
+      const data = {};
+      new FormData(form).forEach((value, name) => { data[name] = value; });
+      data.active = form.elements.active?.checked ? '1' : '0';
+      localStorage.setItem(key, JSON.stringify(data));
+    });
+    form.addEventListener('submit', () => localStorage.removeItem(key));
+  }
+  profile?.addEventListener('change', toggleProfileFields);
   selector?.addEventListener('change', toggleMembers);
-  toggleMembers();
+  toggleProfileFields();
+  initDraft();
 })();
 </script>

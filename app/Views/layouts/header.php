@@ -10,7 +10,7 @@ $route = $_GET['r'] ?? 'dashboard';
 $routeTitles = [
     'dashboard' => 'Indicadores',
     'contracts' => 'Contratos',
-    'providers' => 'Proveedores',
+    'providers' => 'Directorio',
     'documents' => 'Documental',
     'polizas' => 'Revision de polizas',
     'finance' => 'Financiera',
@@ -81,7 +81,7 @@ $alertCount = $isLogged ? \App\Models\Alert::pendingCount() : 0;
       <a class="<?= str_starts_with($route,'contracts')?'active':'' ?>" href="index.php?r=contracts"><i class="bi bi-file-earmark-text"></i><span>Contratos</span></a>
       <?php endif; ?>
       <?php if (\App\Core\Auth::can('providers')): ?>
-      <a class="<?= str_starts_with($route,'providers')?'active':'' ?>" href="index.php?r=providers"><i class="bi bi-building"></i><span>Proveedores</span></a>
+      <a class="<?= str_starts_with($route,'providers')?'active':'' ?>" href="index.php?r=providers"><i class="bi bi-building"></i><span>Directorio</span></a>
       <?php endif; ?>
 
       <?php if (\App\Core\Auth::can('parametricas')): ?>
@@ -201,7 +201,7 @@ $alertCount = $isLogged ? \App\Models\Alert::pendingCount() : 0;
       </div>
       <form class="search-pro modern-search d-none d-lg-flex" method="get" action="index.php">
         <input type="hidden" name="r" value="contracts">
-        <input name="q" class="form-control" placeholder="Buscar contrato, n&uacute;mero o proveedor">
+        <input name="q" class="form-control" placeholder="Buscar contrato, n&uacute;mero o contraparte">
         <button class="btn btn-primary" aria-label="Buscar"><i class="bi bi-search"></i></button>
       </form>
       <div class="ui-icons">

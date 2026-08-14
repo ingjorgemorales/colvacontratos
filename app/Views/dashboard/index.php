@@ -29,7 +29,7 @@ $kpis = [
   ['label' => 'Criticos', 'value' => $critical, 'hint' => 'Vencen en 30 dias', 'icon' => 'bi-exclamation-octagon', 'tone' => 'red', 'url' => 'index.php?r=reports&risk=rojo'],
   ['label' => 'Por vencer', 'value' => $expiring, 'hint' => 'Proximos 90 dias', 'icon' => 'bi-bell', 'tone' => 'amber', 'url' => 'index.php?r=reports&risk=amarillo'],
   ['label' => 'Vencidos', 'value' => $expired, 'hint' => 'Fecha final vencida', 'icon' => 'bi-calendar-x', 'tone' => 'red', 'url' => 'index.php?r=reports&risk=vencido'],
-  ['label' => 'Proveedores', 'value' => $providers, 'hint' => 'Aliados registrados', 'icon' => 'bi-building', 'tone' => 'blue', 'url' => 'index.php?r=providers'],
+  ['label' => 'Directorio', 'value' => $providers, 'hint' => 'Contrapartes registradas', 'icon' => 'bi-building', 'tone' => 'blue', 'url' => 'index.php?r=providers'],
   ['label' => 'Documentos', 'value' => $documents, 'hint' => 'Soportes cargados', 'icon' => 'bi-folder2-open', 'tone' => 'slate', 'url' => 'index.php?r=documents'],
   ['label' => 'Ejecucion', 'value' => $pct($executionGlobal), 'hint' => 'Sobre valor total', 'icon' => 'bi-graph-up-arrow', 'tone' => 'green', 'url' => 'index.php?r=finance'],
 ];
