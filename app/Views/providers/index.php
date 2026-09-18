@@ -49,6 +49,19 @@ $contractorProfile = static function (array $p): string {
     return $parts ? implode(' / ', $parts) : 'Sin clasificacion';
 };
 
+$counterpartyProfileLabel = static function (array $p): string {
+    return match ((string)($p['counterparty_profile'] ?? 'proveedor')) {
+        'cliente' => 'Cliente',
+        'subcontratista' => 'Subcontratista',
+        default => 'Proveedor',
+    };
+};
+
+$classificationBadge = static function (array $p) use ($counterpartyProfileLabel): string {
+    $contractorType = trim((string)($p['tipo_contratista_name'] ?? ''));
+    return $contractorType !== '' ? $contractorType : $counterpartyProfileLabel($p);
+};
+
 $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlencode($q) : '');
 ?>
 
@@ -142,6 +155,7 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
               $document = $formatDocument($p);
               $city = $providerCity($p);
               $profile = $contractorProfile($p);
+              $classification = $classificationBadge($p);
             ?>
             <tr>
               <td>
@@ -153,7 +167,7 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
                 <small><?= htmlspecialchars($p['phone'] ?? 'Sin telefono') ?></small>
               </td>
               <td>
-                <span class="provider-type"><?= htmlspecialchars($p['tipo_contratista_name'] ?? 'Sin tipo contratista') ?></span>
+                <span class="provider-type"><?= htmlspecialchars($classification) ?></span>
                 <small><?= htmlspecialchars($profile) ?></small>
               </td>
               <td><?= htmlspecialchars($city) ?></td>
@@ -197,6 +211,7 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
           $document = $formatDocument($p);
           $city = $providerCity($p);
           $profile = $contractorProfile($p);
+          $classification = $classificationBadge($p);
         ?>
         <article class="provider-mobile-card">
           <div class="provider-card-top">
@@ -223,7 +238,7 @@ $exportUrl = 'index.php?r=providers.export_excel' . ($q !== '' ? '&q=' . urlenco
             </div>
             <div class="provider-card-wide">
               <dt>Clasificacion</dt>
-              <dd><?= htmlspecialchars(trim((string)($p['tipo_contratista_name'] ?? 'Sin tipo contratista')) . ' - ' . $profile) ?></dd>
+              <dd><?= htmlspecialchars($classification . ' - ' . $profile) ?></dd>
             </div>
           </dl>
           <a class="btn btn-outline-primary" href="index.php?r=providers.edit&id=<?= (int)$p['id'] ?>">
