@@ -126,10 +126,6 @@ $isEdit = !empty($c['id']);
           <span>Area</span>
           <select name="area_id" id="areaSelect" class="form-select"><?php optlist($areas,'id',$c['area_id'] ?? '') ?></select>
         </label>
-        <label class="form-field">
-          <span>Sub area</span>
-          <select name="sub_area_id" id="subAreaSelect" class="form-select"><option value="">Seleccione sub area</option></select>
-        </label>
       </div>
     </article>
 
@@ -245,9 +241,7 @@ $isEdit = !empty($c['id']);
 </section>
 
 <script>
-const subAreas = <?= json_encode($subAreas ?? [], JSON_UNESCAPED_UNICODE) ?>;
 const supervisors = <?= json_encode($supervisors ?? [], JSON_UNESCAPED_UNICODE) ?>;
-const currentSubArea = "<?= htmlspecialchars((string)($c['sub_area_id'] ?? '')) ?>";
 function num(v){ return parseFloat(String(v||'0').replace(/[$.\s]/g,'').replace(',','.'))||0; }
 function recalc(){
   const initialValue = document.getElementById('initialValue');
@@ -262,20 +256,6 @@ function recalc(){
 }
 ['initialValue','initialVat','additionsValue'].forEach(id=>document.getElementById(id)?.addEventListener('input', recalc));
 recalc();
-function loadSubAreas(){
-  const areaSelect = document.getElementById('areaSelect');
-  const subAreaSelect = document.getElementById('subAreaSelect');
-  if (!areaSelect || !subAreaSelect) return;
-  const area = areaSelect.value;
-  subAreaSelect.innerHTML = '<option value="">Seleccione sub area</option>';
-  subAreas.filter(s=>String(s.area_id)===String(area)).forEach(s=>{
-    const o = new Option(s.name, s.id);
-    if(String(s.id)===currentSubArea) o.selected = true;
-    subAreaSelect.add(o);
-  });
-}
-document.getElementById('areaSelect')?.addEventListener('change', loadSubAreas);
-loadSubAreas();
 function loadSupervisor(){
   const supervisorSelect = document.getElementById('supervisorSelect');
   const supervisorName = document.getElementById('supervisorName');

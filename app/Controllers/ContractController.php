@@ -13,7 +13,6 @@ final class ContractController {
     private function formData(array $contract, string $action, string $title): array {
         return Catalog::contractParams() + [
             'areas' => Catalog::areas(),
-            'subAreas' => Catalog::subAreas(),
             'statuses' => Catalog::statuses(),
             'providers' => Catalog::providers(),
             'supervisors' => Catalog::supervisors(),

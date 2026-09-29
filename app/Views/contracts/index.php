@@ -93,7 +93,7 @@ $riskInfo = function($days): array {
           <tr>
             <th>Contrato</th>
             <th>N&deg; de Contrato</th>
-            <th>Perfil</th>
+            <th>Tipo Contrato</th>
             <th>Proveedor</th>
             <th>Area</th>
             <th>Fechas</th>
@@ -153,7 +153,7 @@ $riskInfo = function($days): array {
             <span class="risk-badge risk-<?= $riskTone ?>"><?= htmlspecialchars($riskLabel) ?></span>
           </div>
           <dl>
-            <div><dt>Perfil</dt><dd><?= htmlspecialchars($c['contract_type_name'] ?? 'Sin tipo') ?></dd></div>
+            <div><dt>Tipo Contrato</dt><dd><?= htmlspecialchars($c['contract_type_name'] ?? 'Sin tipo') ?></dd></div>
             <div><dt>Proveedor</dt><dd><?= htmlspecialchars($c['provider_name'] ?? '') ?></dd></div>
             <div><dt>Area</dt><dd><?= htmlspecialchars($c['area_name'] ?? '') ?></dd></div>
             <div><dt>Fin</dt><dd><?= htmlspecialchars($c['extension_end_date'] ?: ($c['end_date'] ?? '')) ?></dd></div>
