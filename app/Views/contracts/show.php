@@ -8,6 +8,24 @@ $riskTone = $daysInt === null ? 'secondary' : ($daysInt < 0 || $daysInt <= 30 ? 
 $riskLabel = $daysInt === null ? 'Sin fecha' : ($daysInt < 0 ? 'Vencido' : ($daysInt <= 30 ? 'Critico' : ($daysInt <= 90 ? 'Proximo' : 'Vigente')));
 $execution = min(100, max(0, (float)($contract['execution_percent'] ?? 0)));
 $endDate = $contract['extension_end_date'] ?: ($contract['end_date'] ?? '');
+// Vigencia calculada entre fecha de inicio y fecha fin, contando ambos días
+// (inicio 07/04 y fin 06/10 = 6 meses).
+$vigencia = (static function (?string $inicio, ?string $fin): string {
+    if (!$inicio || !$fin) return '';
+    try {
+        $desde = new DateTime($inicio);
+        $hasta = (new DateTime($fin))->modify('+1 day');
+    } catch (\Throwable $e) {
+        return '';
+    }
+    if ($hasta <= $desde) return '';
+    $diff = $desde->diff($hasta);
+    $meses = $diff->y * 12 + $diff->m;
+    $partes = [];
+    if ($meses > 0) $partes[] = $meses . ($meses === 1 ? ' mes' : ' meses');
+    if ($diff->d > 0) $partes[] = $diff->d . ($diff->d === 1 ? ' día' : ' días');
+    return implode(' y ', $partes);
+})($contract['start_date'] ?? null, $contract['end_date'] ?? null);
 $supervisor = $contract['supervisor_name'] ?: ($contract['supervisor_catalog_name'] ?? '');
 $supervisorDoc = $contract['supervisor_document'] ?: ($contract['supervisor_catalog_document'] ?? '');
 $supervisorDv = $contract['supervisor_verification_digit'] ?: ($contract['supervisor_catalog_dv'] ?? '');
@@ -32,7 +50,7 @@ $dateFields = [
   ['Inicio', $contract['start_date'] ?? ''],
   ['Fin', $contract['end_date'] ?? ''],
   ['Fin prorroga', $contract['extension_end_date'] ?? ''],
-  ['Vigencia meses', $contract['term_months'] ?? ''],
+  ['Vigencia', $vigencia],
   ['Prorroga automatica', $contract['auto_extension'] ?? 'NO'],
 ];
 
@@ -96,7 +114,7 @@ $valueFields = [
       <div class="date-timeline">
         <div><i class="bi bi-calendar-check"></i><span>Inicio</span><strong><?= $h($contract['start_date'] ?? '-') ?></strong></div>
         <div><i class="bi bi-calendar-event"></i><span>Fin</span><strong><?= $h($endDate ?: '-') ?></strong></div>
-        <div><i class="bi bi-hourglass-split"></i><span>Dias</span><strong><?= $daysInt === null ? '-' : $daysInt ?></strong></div>
+        <div><i class="bi bi-hourglass-split"></i><span>D&iacute;as restantes</span><strong><?= $daysInt === null ? '-' : $daysInt ?></strong></div>
       </div>
       <div class="detail-field-grid">
         <?php foreach($dateFields as [$label, $value]): ?>

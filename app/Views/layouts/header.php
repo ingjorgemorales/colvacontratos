@@ -41,7 +41,7 @@ $alertCount = $isLogged ? \App\Models\Alert::pendingCount() : 0;
   <link href="assets/css/inteligencia.css?v=20260528_professional" rel="stylesheet">
   <link href="assets/css/parametricas.css?v=20260528_professional" rel="stylesheet">
   <link href="assets/css/policy_reviews.css?v=20260528_professional" rel="stylesheet">
-  <link href="assets/css/ui-modern.css?v=20260724_btnfix" rel="stylesheet">
+  <link href="assets/css/ui-modern.css?v=20260929_contratos" rel="stylesheet">
 </head>
 <body class="<?= $isLogged ? 'app-shell app-shell-pro ui-shell modern-shell' : 'login-shell' ?>">
 <div class="app-loader" id="appLoader" aria-hidden="true">

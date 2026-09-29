@@ -92,6 +92,8 @@ $riskInfo = function($days): array {
         <thead>
           <tr>
             <th>Contrato</th>
+            <th>N&deg; de Contrato</th>
+            <th>Perfil</th>
             <th>Proveedor</th>
             <th>Area</th>
             <th>Fechas</th>
@@ -104,11 +106,9 @@ $riskInfo = function($days): array {
         <tbody>
           <?php foreach($contracts as $c): [$riskLabel, $riskTone] = $riskInfo($c['days_to_expire'] ?? null); ?>
             <tr>
-              <td>
-                <a class="contract-number" href="index.php?r=contracts.show&id=<?= (int)$c['id'] ?>"><?= htmlspecialchars($c['number']) ?></a>
-                <strong><?= htmlspecialchars($c['name']) ?></strong>
-                <small><?= htmlspecialchars($c['contract_type_name'] ?? 'Sin tipo') ?></small>
-              </td>
+              <td><a class="contract-number" href="index.php?r=contracts.show&id=<?= (int)$c['id'] ?>"><?= htmlspecialchars($c['number']) ?></a></td>
+              <td><strong><?= htmlspecialchars($c['name']) ?></strong></td>
+              <td><?= htmlspecialchars($c['contract_type_name'] ?? 'Sin tipo') ?></td>
               <td><?= htmlspecialchars($c['provider_name'] ?? '') ?></td>
               <td><?= htmlspecialchars($c['area_name'] ?? '') ?></td>
               <td>
@@ -136,7 +136,7 @@ $riskInfo = function($days): array {
             </tr>
           <?php endforeach; ?>
           <?php if(empty($contracts)): ?>
-            <tr><td colspan="8" class="text-center text-muted py-4">No hay contratos para los filtros seleccionados.</td></tr>
+            <tr><td colspan="10" class="text-center text-muted py-4">No hay contratos para los filtros seleccionados.</td></tr>
           <?php endif; ?>
         </tbody>
       </table>
@@ -153,6 +153,7 @@ $riskInfo = function($days): array {
             <span class="risk-badge risk-<?= $riskTone ?>"><?= htmlspecialchars($riskLabel) ?></span>
           </div>
           <dl>
+            <div><dt>Perfil</dt><dd><?= htmlspecialchars($c['contract_type_name'] ?? 'Sin tipo') ?></dd></div>
             <div><dt>Proveedor</dt><dd><?= htmlspecialchars($c['provider_name'] ?? '') ?></dd></div>
             <div><dt>Area</dt><dd><?= htmlspecialchars($c['area_name'] ?? '') ?></dd></div>
             <div><dt>Fin</dt><dd><?= htmlspecialchars($c['extension_end_date'] ?: ($c['end_date'] ?? '')) ?></dd></div>

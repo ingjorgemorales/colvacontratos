@@ -46,7 +46,7 @@ $isEdit = !empty($c['id']);
           <input name="contract_month" class="form-control" value="<?= $v('contract_month') ?>" placeholder="Abril">
         </label>
         <label class="form-field wide">
-          <span>Nombre / titulo</span>
+          <span>Numero de Contrato</span>
           <input name="name" class="form-control" required value="<?= $v('name') ?>">
         </label>
         <label class="form-field full">
@@ -146,10 +146,7 @@ $isEdit = !empty($c['id']);
           <span>Supervisor</span>
           <select name="supervisor_id" id="supervisorSelect" class="form-select"><?php optlist($supervisors,'id',$c['supervisor_id'] ?? '') ?></select>
         </label>
-        <label class="form-field wide">
-          <span>Nombre supervisor</span>
-          <input name="supervisor_name" id="supervisorName" class="form-control" value="<?= $v('supervisor_name') ?>" readonly>
-        </label>
+        <input type="hidden" name="supervisor_name" id="supervisorName" value="<?= $v('supervisor_name') ?>">
         <label class="form-field small">
           <span>Id supervisor</span>
           <input name="supervisor_document" id="supervisorDoc" class="form-control" value="<?= $v('supervisor_document') ?>" readonly>

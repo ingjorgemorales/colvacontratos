@@ -51,7 +51,7 @@ final class ContractController {
     public function store(): void {
         Auth::requireLogin();
         if (trim($_POST['name'] ?? '') === '' || trim($_POST['object'] ?? '') === '') {
-            Flash::set('danger','Nombre y objeto del contrato son obligatorios.');
+            Flash::set('danger','Numero de contrato y objeto son obligatorios.');
             header('Location: index.php?r=contracts.create'); exit;
         }
         $id = Contract::create($_POST);
