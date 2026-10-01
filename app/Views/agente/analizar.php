@@ -1,7 +1,7 @@
 <?php
 $motores = $motores ?? [];
 ?>
-<link rel="stylesheet" href="assets/css/agente.css?v=5">
+<link rel="stylesheet" href="assets/css/agente.css?v=6">
 
 <section class="agente-modern">
   <div class="ag-hero">
@@ -70,6 +70,10 @@ $motores = $motores ?? [];
       corregir datos del contrato o de la póliza (por ejemplo, un otrosí o un anexo de prórroga que no se adjuntó).
       Cada dato que cambies queda registrado en el acta con lo que decía el documento.
     </p>
+    <div class="ag-alert-warn ag-aviso-ia" role="note">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <div>Por favor, revise los resultados: los modelos de IA pueden cometer errores.</div>
+    </div>
     <div class="ag-instr-box" id="ag-instr-box">
       <textarea id="ag-instrucciones" rows="3" maxlength="4000"
         placeholder="Ej.: No exigir RCE, el contratista trabaja de forma remota. Salarios al 10 % por 3 años. Verificar que el beneficiario sea Colvatel."></textarea>

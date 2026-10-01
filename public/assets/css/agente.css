@@ -146,3 +146,6 @@
   .ag-instr-actions{justify-content:stretch}
   .ag-instr-actions .btn{flex:1 1 100%}
 }
+/* Aviso permanente: la IA puede equivocarse y el análisis requiere revisión humana. */
+.ag-aviso-ia{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px}
+.ag-aviso-ia .bi{font-size:16px;color:#c98a00;line-height:1.4;flex-shrink:0}
