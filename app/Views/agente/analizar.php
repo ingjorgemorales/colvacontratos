@@ -1,7 +1,7 @@
 <?php
 $motores = $motores ?? [];
 ?>
-<link rel="stylesheet" href="assets/css/agente.css?v=3">
+<link rel="stylesheet" href="assets/css/agente.css?v=5">
 
 <section class="agente-modern">
   <div class="ag-hero">
@@ -59,6 +59,42 @@ $motores = $motores ?? [];
     </div>
   </div>
 
+  <div class="ag-card ag-instr">
+    <div class="ag-card-title">
+      <span class="bar"></span> Instrucciones para el agente
+      <span class="ag-opt">opcional</span>
+    </div>
+    <p class="ag-instr-help">
+      Lo que escribas aquí <b>tiene prioridad sobre el Manual de Contratación, el contrato y lo leído en las pólizas</b>.
+      Úsalo para excepciones, parámetros que el Manual no contempla, comprobaciones adicionales o para
+      corregir datos del contrato o de la póliza (por ejemplo, un otrosí o un anexo de prórroga que no se adjuntó).
+      Cada dato que cambies queda registrado en el acta con lo que decía el documento.
+    </p>
+    <div class="ag-instr-box" id="ag-instr-box">
+      <textarea id="ag-instrucciones" rows="3" maxlength="4000"
+        placeholder="Ej.: No exigir RCE, el contratista trabaja de forma remota. Salarios al 10 % por 3 años. Verificar que el beneficiario sea Colvatel."></textarea>
+      <div class="ag-instr-foot">
+        <div class="ag-chips">
+          <button type="button" class="ag-chip" data-txt="No exigir el amparo de [amparo] porque [motivo].">No exigir un amparo</button>
+          <button type="button" class="ag-chip" data-txt="Exigir [amparo] al [porcentaje] % del valor del contrato, vigente [N] meses después de la terminación.">Cambiar % o vigencia</button>
+          <button type="button" class="ag-chip" data-txt="Exigir RCE por un valor mínimo de $[valor].">Valor mínimo fijo</button>
+          <button type="button" class="ag-chip" data-txt="La fecha de terminación real es [dd/mm/aaaa] por la prórroga del otrosí n.º [N].">Fecha por otrosí</button>
+          <button type="button" class="ag-chip" data-txt="La póliza de [amparo] está prorrogada hasta el [dd/mm/aaaa] por el anexo n.º [N], que no se adjuntó.">Prórroga de póliza</button>
+          <button type="button" class="ag-chip" data-txt="La suma asegurada de [amparo] es $[valor] según el anexo n.º [N].">Corregir dato de póliza</button>
+          <button type="button" class="ag-chip" data-txt="Verificar que el asegurado y beneficiario sea COLVATEL S.A. E.S.P.">Verificar beneficiario</button>
+        </div>
+        <span class="ag-instr-count" id="ag-instr-count">0 / 4000</span>
+      </div>
+    </div>
+    <div class="ag-instr-actions" id="ag-instr-actions" style="display:none">
+      <span class="ag-instr-estado" id="ag-instr-estado"></span>
+      <button type="button" class="btn btn-primary btn-sm" id="btn-reanalizar"
+        title="Vuelve a analizar los mismos documentos con las instrucciones actuales. Queda como un análisis nuevo en el Histórico.">
+        <i class="bi bi-arrow-repeat"></i> Reanalizar con estas instrucciones
+      </button>
+    </div>
+  </div>
+
   <button class="btn btn-primary btn-lg w-100 mb-3" id="btn-analizar" disabled>
     <i class="bi bi-search"></i> Analizar documentos y generar Acta
   </button>
@@ -82,6 +118,7 @@ $motores = $motores ?? [];
         <span class="ag-badge-global" id="ag-badge"></span>
       </div>
       <div id="ag-consumo" class="ag-consumo" style="display:none"></div>
+      <div id="ag-revisor" class="ag-rev-box" style="display:none;margin-bottom:12px"></div>
       <div id="ag-advertencias" class="ag-alert-warn" style="display:none;margin-bottom:12px"></div>
 
       <div class="ag-info-grid">
@@ -113,6 +150,16 @@ $motores = $motores ?? [];
         </table>
       </div>
 
+      <div id="ag-criterios" style="display:none" class="mt-3">
+        <div class="ag-sub-title"><i class="bi bi-person-check"></i> Criterios adicionales del revisor</div>
+        <div class="table-responsive">
+          <table class="ag-amp-table ag-crit-table">
+            <thead><tr><th>Criterio</th><th>Evidencia en los documentos</th><th>Estado</th></tr></thead>
+            <tbody id="ag-tabla-criterios"></tbody>
+          </table>
+        </div>
+      </div>
+
       <button class="btn btn-success mt-3" id="ag-btn-excel"><i class="bi bi-file-earmark-excel"></i> Descargar Acta de Aprobación (Excel)</button>
     </div>
 
@@ -130,4 +177,4 @@ $motores = $motores ?? [];
 </section>
 
 <script>window.AG_PROXY = 'index.php?r=agente.proxy&path=';</script>
-<script src="assets/js/agente-analizar.js?v=3"></script>
+<script src="assets/js/agente-analizar.js?v=6"></script>
