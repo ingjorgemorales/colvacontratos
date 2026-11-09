@@ -4,6 +4,73 @@ use App\Core\Database;
 use PDO;
 
 final class Contract {
+    public const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+    public const PAYMENT_FREQUENCIES = [
+        'hitos' => 'Por hitos',
+        'mes_vencido' => 'Mes vencido',
+        'mensual' => 'Mensual',
+        'quincenal' => 'Quincenal',
+        'bimestral' => 'Bimestral',
+        'trimestral' => 'Trimestral',
+        'semestral' => 'Semestral',
+        'anual' => 'Anual',
+        'unico' => 'Pago unico',
+        'otra' => 'Otra',
+    ];
+
+    public static function normalizeMonth(string $value): string {
+        $value = trim($value);
+        foreach (self::MONTHS as $index => $month) {
+            if (strcasecmp($value, $month) === 0 || $value === (string)($index + 1) || $value === sprintf('%02d', $index + 1)) {
+                return $month;
+            }
+        }
+        return $value;
+    }
+
+    public static function formErrors(array $data, ?array $existing = null): array {
+        $errors = [];
+        if (trim((string)($data['name'] ?? '')) === '' || trim((string)($data['object'] ?? '')) === '') {
+            $errors[] = 'Numero de contrato y objeto son obligatorios.';
+        }
+        $month = self::normalizeMonth((string)($data['contract_month'] ?? ''));
+        // Un mes historico no reconocido se conserva mientras no se cambie.
+        $historicMonth = $existing === null ? null : self::normalizeMonth((string)($existing['contract_month'] ?? ''));
+        if ($month !== '' && !in_array($month, self::MONTHS, true) && $month !== $historicMonth) {
+            $errors[] = 'Seleccione un mes valido.';
+        }
+        $frequency = (string)($data['payment_frequency'] ?? '');
+        if ($frequency !== '' && !array_key_exists($frequency, self::PAYMENT_FREQUENCIES)) {
+            $errors[] = 'Seleccione una frecuencia de pago valida.';
+        }
+        $days = trim((string)($data['payment_term_days'] ?? ''));
+        if ($days !== '' && (!ctype_digit($days) || (float)$days > 65535)) {
+            $errors[] = 'El plazo de pago debe ser un numero entero entre 0 y 65535 dias.';
+        }
+        return $errors;
+    }
+
+    public static function areaErrors(array $data, array $areas, array $subAreas, ?array $existing = null): array {
+        $area = (string)($data['area_id'] ?? '');
+        $subArea = (string)($data['sub_area_id'] ?? '');
+        // Se permite conservar la pareja historica, incluso si fue desactivada.
+        if ($existing !== null && $area === (string)($existing['area_id'] ?? '') && $subArea === (string)($existing['sub_area_id'] ?? '')) {
+            return [];
+        }
+        if ($area === '') {
+            return $subArea === '' ? [] : ['Seleccione el area de la subarea.'];
+        }
+        $validArea = array_filter($areas, fn($item) => (string)$item['id'] === $area);
+        if (!$validArea) return ['Seleccione un area vigente.'];
+        $children = array_filter($subAreas, fn($item) => (string)$item['area_id'] === $area);
+        if (!$children) return $subArea === '' ? [] : ['El area seleccionada no tiene subareas: No aplica.'];
+        foreach ($children as $child) {
+            if ((string)$child['id'] === $subArea) return [];
+        }
+        return ['Seleccione una subarea del area elegida.'];
+    }
+
     public static function paginate(array $filters, int $limit=20, int $offset=0): array {
         $where=[]; $params=[];
         if (!empty($filters['area_id'])) { $where[]='c.area_id=?'; $params[]=(int)$filters['area_id']; }
@@ -45,6 +112,7 @@ final class Contract {
                        tp.name expense_type_name, op.name budget_origin_name, orr.name resource_origin_name,
                        tm.name currency_type_name, ct.name control_type_name, pr.name procedure_type_name,
                        ic.name contract_start_type_name, cty.name contract_type_name,
+                       EXISTS(SELECT 1 FROM area_subareas child WHERE child.area_id=c.area_id AND child.active=1) AS area_has_subareas,
                        DATEDIFF(COALESCE(c.extension_end_date,c.end_date), CURDATE()) AS days_to_expire
                 FROM contracts c
                 LEFT JOIN areas a ON a.id=c.area_id
@@ -88,7 +156,7 @@ final class Contract {
     }
 
     private static function columns(): array {
-        return ['contract_type_id','area_id','sub_area_id','provider_id','status_id','number','name','object','payment_clause','subscription_date','start_date','end_date','extension_end_date','term_months','initial_value','initial_vat','total_initial','additions_value','total_value','executed_value','execution_percent','auto_extension','supervisor_id','supervisor_name','supervisor_document','supervisor_verification_digit','commitment_type_id','selection_modality_id','expense_topic_id','term_unit_id','execution_term_value','specific_typology_id','contracting_regime_id','expense_type_id','budget_origin_id','resource_origin_id','currency_type_id','control_type_id','procedure_type_id','contract_start_type_id','contract_year','contract_month','agreed_payments_qty','agreed_other_payments_qty'];
+        return ['contract_type_id','area_id','sub_area_id','provider_id','status_id','number','name','object','payment_clause','payment_frequency','payment_term_days','subscription_date','start_date','end_date','extension_end_date','term_months','initial_value','initial_vat','total_initial','additions_value','total_value','executed_value','execution_percent','auto_extension','supervisor_id','supervisor_name','supervisor_document','supervisor_verification_digit','commitment_type_id','selection_modality_id','expense_topic_id','term_unit_id','execution_term_value','specific_typology_id','contracting_regime_id','expense_type_id','budget_origin_id','resource_origin_id','currency_type_id','control_type_id','procedure_type_id','contract_start_type_id','contract_year','contract_month','agreed_payments_qty','agreed_other_payments_qty'];
     }
 
     private static function payload(array $d): array {
@@ -109,6 +177,8 @@ final class Contract {
             'name' => trim((string)($d['name'] ?? '')),
             'object' => trim((string)($d['object'] ?? '')),
             'payment_clause' => trim((string)($d['payment_clause'] ?? '')),
+            'payment_frequency' => ($d['payment_frequency'] ?? '') === '' ? null : $d['payment_frequency'],
+            'payment_term_days' => self::nullableInt($d['payment_term_days'] ?? null),
             'subscription_date' => self::dateOrNull($d['subscription_date'] ?? null),
             'start_date' => self::dateOrNull($d['start_date'] ?? null),
             'end_date' => self::dateOrNull($d['end_date'] ?? null),
@@ -141,7 +211,7 @@ final class Contract {
             'procedure_type_id' => self::nullableInt($d['procedure_type_id'] ?? null),
             'contract_start_type_id' => null,
             'contract_year' => (int)($d['contract_year'] ?? date('Y')),
-            'contract_month' => trim((string)($d['contract_month'] ?? '')),
+            'contract_month' => self::normalizeMonth((string)($d['contract_month'] ?? '')),
             'agreed_payments_qty' => (int)($d['agreed_payments_qty'] ?? 0),
             'agreed_other_payments_qty' => (int)($d['agreed_other_payments_qty'] ?? 0),
         ];

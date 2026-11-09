@@ -8,6 +8,7 @@ function optlist($items, $field, $current, $empty='Seleccione') { ?>
   <?php endforeach; ?>
 <?php }
 $isEdit = !empty($c['id']);
+$currentMonth = \App\Models\Contract::normalizeMonth((string)($c['contract_month'] ?? ''));
 ?>
 
 <section class="contract-form-modern">
@@ -25,6 +26,11 @@ $isEdit = !empty($c['id']);
   </div>
 
   <form method="post" action="<?= htmlspecialchars($action) ?>" id="contractForm" class="contract-form-shell">
+    <?php if (!empty($errors)): ?>
+      <div class="alert alert-danger" role="alert">
+        <?php foreach ($errors as $error): ?><p class="mb-1"><?= htmlspecialchars($error) ?></p><?php endforeach; ?>
+      </div>
+    <?php endif; ?>
     <input type="hidden" name="number" value="<?= $v('number') ?>">
     <input type="hidden" name="term_months" value="0">
 
@@ -43,7 +49,15 @@ $isEdit = !empty($c['id']);
         </label>
         <label class="form-field small">
           <span>Mes</span>
-          <input name="contract_month" class="form-control" value="<?= $v('contract_month') ?>" placeholder="Abril">
+          <select name="contract_month" class="form-select">
+            <option value="">Seleccione</option>
+            <?php if ($currentMonth !== '' && !in_array($currentMonth, \App\Models\Contract::MONTHS, true)): ?>
+              <option value="<?= htmlspecialchars($currentMonth) ?>" selected><?= htmlspecialchars($currentMonth) ?> (valor anterior)</option>
+            <?php endif; ?>
+            <?php foreach (\App\Models\Contract::MONTHS as $month): ?>
+              <option value="<?= $month ?>" <?= $currentMonth === $month ? 'selected' : '' ?>><?= $month ?></option>
+            <?php endforeach; ?>
+          </select>
         </label>
         <label class="form-field wide">
           <span>Numero de Contrato</span>
@@ -53,8 +67,21 @@ $isEdit = !empty($c['id']);
           <span>Objeto</span>
           <textarea name="object" class="form-control" rows="4" required><?= $v('object') ?></textarea>
         </label>
+        <label class="form-field">
+          <span>Frecuencia de pago</span>
+          <select name="payment_frequency" class="form-select">
+            <option value="">Sin especificar</option>
+            <?php foreach (\App\Models\Contract::PAYMENT_FREQUENCIES as $key => $label): ?>
+              <option value="<?= $key ?>" <?= ($c['payment_frequency'] ?? '') === $key ? 'selected' : '' ?>><?= htmlspecialchars($label) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </label>
+        <label class="form-field">
+          <span>Plazo de pago (dias)</span>
+          <input type="number" name="payment_term_days" class="form-control" min="0" max="65535" step="1" value="<?= $v('payment_term_days') ?>">
+        </label>
         <label class="form-field full">
-          <span>Clausula de pago</span>
+          <span>Clausula de pago (detalle contractual)</span>
           <textarea name="payment_clause" class="form-control" rows="4"><?= $v('payment_clause') ?></textarea>
         </label>
       </div>
@@ -125,6 +152,15 @@ $isEdit = !empty($c['id']);
         <label class="form-field">
           <span>Area</span>
           <select name="area_id" id="areaSelect" class="form-select"><?php optlist($areas,'id',$c['area_id'] ?? '') ?></select>
+        </label>
+        <label class="form-field">
+          <span>Subarea</span>
+          <select name="sub_area_id" id="subAreaSelect" class="form-select">
+            <?php
+            $areaChildren = array_values(array_filter($subAreas ?? [], fn($item) => (string)$item['area_id'] === (string)($c['area_id'] ?? '')));
+            optlist($areaChildren, 'id', $c['sub_area_id'] ?? '', empty($c['area_id']) ? 'Seleccione un area' : ($areaChildren ? 'Seleccione subarea' : 'No aplica'));
+            ?>
+          </select>
         </label>
       </div>
     </article>
@@ -241,6 +277,22 @@ $isEdit = !empty($c['id']);
 </section>
 
 <script>
+const contractSubAreas = <?= json_encode($subAreas ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+const initialContractArea = <?= json_encode((string)($c['area_id'] ?? '')) ?>;
+const initialContractSubArea = <?= json_encode((string)($c['sub_area_id'] ?? '')) ?>;
+function loadContractSubAreas(selected = '') {
+  const area = document.getElementById('areaSelect').value;
+  const select = document.getElementById('subAreaSelect');
+  const children = contractSubAreas.filter(item => String(item.area_id) === area && (Number(item.active) === 1 || String(item.id) === selected));
+  const preserveEmpty = area === initialContractArea && initialContractSubArea === '' && <?= $isEdit ? 'true' : 'false' ?>;
+  select.replaceChildren(new Option(!area ? 'Seleccione un area' : (children.length ? (preserveEmpty ? 'Sin especificar' : 'Seleccione subarea') : 'No aplica'), ''));
+  children.forEach(item => select.add(new Option(item.name + (Number(item.active) === 1 ? '' : ' (historica)'), String(item.id))));
+  select.value = children.some(item => String(item.id) === selected) ? selected : '';
+  select.disabled = !area || children.length === 0;
+  select.required = !!area && children.length > 0 && !preserveEmpty;
+}
+document.getElementById('areaSelect').addEventListener('change', () => loadContractSubAreas());
+loadContractSubAreas(initialContractSubArea);
 const supervisors = <?= json_encode($supervisors ?? [], JSON_UNESCAPED_UNICODE) ?>;
 function num(v){ return parseFloat(String(v||'0').replace(/[$.\s]/g,'').replace(',','.'))||0; }
 function recalc(){

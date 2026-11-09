@@ -21,8 +21,16 @@ final class Catalog {
         'tipo_contrato' => 'contract_types',
     ];
 
-    public static function areas(): array { return Database::pdo()->query('SELECT id,name FROM areas WHERE active=1 ORDER BY name')->fetchAll(); }
-    public static function subAreas(): array { return Database::pdo()->query('SELECT id,area_id,name FROM area_subareas WHERE active=1 ORDER BY name')->fetchAll(); }
+    public static function areas(?int $current = null): array {
+        $st = Database::pdo()->prepare('SELECT id,name,active FROM areas WHERE active=1 OR id=? ORDER BY name');
+        $st->execute([$current]);
+        return $st->fetchAll();
+    }
+    public static function subAreas(?int $current = null): array {
+        $st = Database::pdo()->prepare('SELECT id,area_id,name,active FROM area_subareas WHERE active=1 OR id=? ORDER BY name');
+        $st->execute([$current]);
+        return $st->fetchAll();
+    }
     public static function statuses(): array { return Database::pdo()->query('SELECT id,name FROM contract_statuses ORDER BY sort_order,id')->fetchAll(); }
     public static function providers(): array { return Database::pdo()->query('SELECT id,name FROM providers WHERE active=1 ORDER BY name')->fetchAll(); }
     public static function supervisors(): array { return Database::pdo()->query('SELECT id,full_name,document_number,verification_digit FROM contract_supervisors WHERE active=1 ORDER BY full_name')->fetchAll(); }

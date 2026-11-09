@@ -12,7 +12,8 @@ use App\Services\NotificationService;
 final class ContractController {
     private function formData(array $contract, string $action, string $title): array {
         return Catalog::contractParams() + [
-            'areas' => Catalog::areas(),
+            'areas' => Catalog::areas((int)($contract['area_id'] ?? 0)),
+            'subAreas' => Catalog::subAreas((int)($contract['sub_area_id'] ?? 0)),
             'statuses' => Catalog::statuses(),
             'providers' => Catalog::providers(),
             'supervisors' => Catalog::supervisors(),
@@ -49,9 +50,11 @@ final class ContractController {
 
     public function store(): void {
         Auth::requireLogin();
-        if (trim($_POST['name'] ?? '') === '' || trim($_POST['object'] ?? '') === '') {
-            Flash::set('danger','Numero de contrato y objeto son obligatorios.');
-            header('Location: index.php?r=contracts.create'); exit;
+        $errors = array_merge(Contract::formErrors($_POST), Contract::areaErrors($_POST, Catalog::areas(), Catalog::subAreas()));
+        if ($errors) {
+            http_response_code(422);
+            View::render('contracts/form', $this->formData($_POST, 'index.php?r=contracts.store', 'Nuevo contrato') + ['errors' => $errors]);
+            return;
         }
         $id = Contract::create($_POST);
         $after = Contract::find($id);
@@ -79,6 +82,13 @@ final class ContractController {
         Auth::requireLogin();
         $id = (int)($_GET['id'] ?? 0);
         $before = Contract::find($id);
+        if (!$before) { http_response_code(404); View::render('errors/404'); return; }
+        $errors = array_merge(Contract::formErrors($_POST, $before), Contract::areaErrors($_POST, Catalog::areas(), Catalog::subAreas(), $before));
+        if ($errors) {
+            http_response_code(422);
+            View::render('contracts/form', $this->formData(array_replace($before, $_POST, ['id' => $id]), 'index.php?r=contracts.update&id='.$id, 'Editar contrato') + ['errors' => $errors]);
+            return;
+        }
         Contract::update($id, $_POST);
         $after = Contract::find($id);
         if (class_exists(ChangeLogger::class)) ChangeLogger::log('contract',$id,'update','Contrato actualizado: '.($after['name']??''),$before,$after);

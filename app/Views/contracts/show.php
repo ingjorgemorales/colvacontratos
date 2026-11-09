@@ -42,7 +42,7 @@ $generalFields = [
   ['Origen recursos', $contract['resource_origin_name'] ?? ''],
   ['Tipo moneda', $contract['currency_type_name'] ?? ''],
   ['Area', $contract['area_name'] ?? ''],
-  ['Sub area', $contract['sub_area_name'] ?? ''],
+  ['Subarea', $contract['sub_area_name'] ?: (empty($contract['area_id']) || !empty($contract['area_has_subareas']) ? 'Sin especificar' : 'No aplica')],
 ];
 
 $dateFields = [
@@ -182,7 +182,13 @@ $valueFields = [
         <p><?= nl2br($h($contract['object'] ?? '')) ?></p>
       </div>
       <div>
-        <h3>Clausula de pago</h3>
+        <h3>Clausula de pago (detalle contractual)</h3>
+        <dl>
+          <dt>Frecuencia de pago</dt>
+          <dd><?= $h(\App\Models\Contract::PAYMENT_FREQUENCIES[$contract['payment_frequency'] ?? ''] ?? 'Sin especificar') ?></dd>
+          <dt>Plazo de pago (dias)</dt>
+          <dd><?= $h($contract['payment_term_days'] ?? 'Sin especificar') ?></dd>
+        </dl>
         <p><?= nl2br($h($contract['payment_clause'] ?? '')) ?></p>
       </div>
     </div>
