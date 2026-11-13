@@ -60,6 +60,10 @@ final class ContractAreasMigrationTest extends TestCase
         $this->assertSame($areaCount, DB::table('areas')->count());
         $this->assertSame($childCount, DB::table('area_subareas')->count());
 
+        $historicId = DB::table('areas')->insertGetId(['name' => 'GERENCIA FINANCIERA', 'active' => 0]);
+        $historicChild = DB::table('area_subareas')->insertGetId(['area_id' => $historicId, 'name' => 'Subarea historica', 'active' => 0]);
+        $areaCount++;
+        $childCount++;
         $adjustment = require base_path('database/migrations/2026_11_13_000000_adjust_financial_area_and_add_subareas.php');
         $adjustment->up();
         $adjustment->up();
@@ -75,5 +79,8 @@ final class ContractAreasMigrationTest extends TestCase
             $this->assertSame(1, DB::table('area_subareas')->where('area_id', $parentId)->where('name', $childName)->where('active', 1)->count());
         }
         $this->assertSame(20, DB::table('contracts')->value('sub_area_id'));
+        $this->assertSame('GERENCIA FINANCIERA (HISTORICA ' . $historicId . ')', DB::table('areas')->where('id', $historicId)->value('name'));
+        $this->assertSame(0, DB::table('areas')->where('id', $historicId)->value('active'));
+        $this->assertSame($historicId, DB::table('area_subareas')->where('id', $historicChild)->value('area_id'));
     }
 }

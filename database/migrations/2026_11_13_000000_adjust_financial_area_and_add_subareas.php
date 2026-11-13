@@ -11,7 +11,13 @@ return new class extends Migration
             $financial = DB::table('areas')->where('name', 'FINANCIERA')->first();
             $renamed = DB::table('areas')->where('name', 'GERENCIA FINANCIERA')->first();
             if ($financial && $renamed && $financial->id !== $renamed->id) {
-                throw new RuntimeException('Existen FINANCIERA y GERENCIA FINANCIERA. Revise los registros antes de unificarlos.');
+                if ((int)$financial->active !== 1 || (int)$renamed->active !== 0 || DB::table('contracts')->where('area_id', $renamed->id)->exists()) {
+                    throw new RuntimeException('Existen FINANCIERA y GERENCIA FINANCIERA con estados o contratos que requieren revision.');
+                }
+                // Conserva el registro inactivo y sus subareas sin ocupar el nombre vigente.
+                DB::table('areas')->where('id', $renamed->id)->update([
+                    'name' => 'GERENCIA FINANCIERA (HISTORICA ' . $renamed->id . ')',
+                ]);
             }
             if (!$financial && !$renamed) {
                 throw new RuntimeException('Falta el area FINANCIERA. Ejecute primero la migracion de areas del 2026_11_09.');
