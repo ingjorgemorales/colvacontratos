@@ -59,5 +59,21 @@ final class ContractAreasMigrationTest extends TestCase
         $migration->up();
         $this->assertSame($areaCount, DB::table('areas')->count());
         $this->assertSame($childCount, DB::table('area_subareas')->count());
+
+        $adjustment = require base_path('database/migrations/2026_11_13_000000_adjust_financial_area_and_add_subareas.php');
+        $adjustment->up();
+        $adjustment->up();
+        $this->assertSame(1, DB::table('areas')->where('name', 'GERENCIA FINANCIERA')->value('id'));
+        $this->assertSame($areaCount, DB::table('areas')->count());
+        $this->assertSame($childCount + 2, DB::table('area_subareas')->count());
+        $this->assertSame(1, DB::table('area_subareas')->where('id', 10)->value('area_id'));
+        foreach ([
+            'SECRETARIA GENERAL Y DE ASUNTOS CORPORATIVOS' => 'SECRETARIA GENERAL Y ASUNTOS CORPORATIVOS',
+            'VICEPRESIDENCIA DE OPERACIONES' => 'DIRECCION EMPRESAS Y GOBIERNO',
+        ] as $parent => $childName) {
+            $parentId = DB::table('areas')->where('name', $parent)->value('id');
+            $this->assertSame(1, DB::table('area_subareas')->where('area_id', $parentId)->where('name', $childName)->where('active', 1)->count());
+        }
+        $this->assertSame(20, DB::table('contracts')->value('sub_area_id'));
     }
 }
